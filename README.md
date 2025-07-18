@@ -1,69 +1,61 @@
-# React + TypeScript + Vite
+# everyday
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A gentle task manager designed specifically for ADHD brains. Every interaction prioritizes emotional safety and reduces cognitive load.
 
-Currently, two official plugins are available:
+## Philosophy
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Traditional todo apps can feel overwhelming and judgmental. **everyday** takes a different approach:
 
-## Expanding the ESLint configuration
+- **Gentle language** - "add something" instead of "CREATE TASK"
+- **Warm interactions** - Soft animations and encouraging feedback
+- **Forgiving design** - Easy to add, remove, and modify without pressure
+- **ADHD-friendly** - Minimal cognitive load, warm color palette, no harsh whites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Features
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- ✅ Simple task input with soft styling
+- ✅ Gentle hover states and micro-interactions
+- ✅ Warm, cozy color palette (terracotta, sage, peach)
+- ✅ Framer Motion animations for emotional comfort
+- 🔄 Persistent storage (localStorage) - *in progress*
+- 🔄 Task completion with satisfying micro-interactions
+- 📋 Gentle routine tracking (planned)
+- 🎉 Soft celebrations for completed tasks (planned)
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## Tech Stack
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **React 19** + TypeScript
+- **Tailwind CSS 4** with warm, ADHD-friendly color system
+- **Framer Motion** for gentle animations
+- **Zustand** for simple state management
+- **shadcn/ui** components with custom warm styling
+- **Vite** for fast development
+
+## Design Principles
+
+- **Lowercase branding** - Reinforces gentle, non-judgmental vibe
+- **Warm colors** - Earth tones, no stark whites or blacks
+- **Soft animations** - Guide attention without overwhelming
+- **Minimal decisions** - Clear hierarchy, reduced cognitive friction
+- **Emotional safety** - Every interaction feels forgiving
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Target Users
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+People with ADHD, anxiety, or executive dysfunction who find traditional productivity apps overwhelming. Built for those who need gentle consistency support rather than aggressive productivity tracking.
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+*"Remove features that add complexity. Add features that reduce anxiety."*

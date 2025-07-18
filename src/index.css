@@ -6,6 +6,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: 'Outfit';
+  src: url(./assets/fonts/Outfit.ttf) format('truetype');
+}
+
 @theme {
   /* Radius Scales - Derived from a base `--radius` */
   --radius-sm: calc(var(--radius) - 4px);
@@ -175,5 +180,6 @@
     /* Add subtle texture for warmth */
     background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
     background-size: 20px 20px;
+    font-family: 'Outfit', sans-serif;
   }
 }

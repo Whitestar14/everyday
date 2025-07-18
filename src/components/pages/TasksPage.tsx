@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { TaskList } from '@/components/tasks/TaskList'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { AddTaskSheet } from '@/components/tasks/AddTaskSheet'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
-import { fadeIn } from '@/utils/animations'
+import { fadeIn, gentleFadeIn } from '@/utils/animations'
 import type { ButtonPosition, ThemeMode } from '@/types/app'
 
 interface Task {
@@ -72,22 +72,40 @@ export function TasksPage({
           />
         </motion.div>
 
-        {/* All Tasks */}
-        {tasks.length > 0 ? (
-          <TaskList
-            tasks={tasks}
-            completingTasks={completingTasks}
-            onCompleteTask={onCompleteTask}
-            title="your gentle reminders"
-            showViewAll={false}
-          />
-        ) : (
-          <EmptyState
-            title="no tasks yet"
-            subtitle="that's perfectly okay"
-            description="tap the + button to add your first gentle reminder"
-          />
-        )}
+        {/* Content Area with Smooth Transitions */}
+        <AnimatePresence mode="wait">
+          {tasks.length > 0 ? (
+            <motion.div
+              key="tasks-content"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={gentleFadeIn}
+            >
+              <TaskList
+                tasks={tasks}
+                completingTasks={completingTasks}
+                onCompleteTask={onCompleteTask}
+                title="your gentle reminders"
+                showViewAll={false}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty-content"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={gentleFadeIn}
+            >
+              <EmptyState
+                title="nothing to track right now"
+                subtitle="that's perfectly okay"
+                description="tap the + button below when you're ready"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Add Task Sheet */}

@@ -46,7 +46,7 @@ export function AddTaskSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <motion.button
-          className={`fixed w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg active:scale-95 transition-transform flex items-center justify-center ${buttonPositionStyles}`}
+          className={`fixed w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg active:scale-95 transition-transform flex items-center justify-center z-50 ${buttonPositionStyles}`}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.5, type: "spring", stiffness: 300, damping: 20 }}
@@ -56,34 +56,59 @@ export function AddTaskSheet({
           <Plus className="w-6 h-6" />
         </motion.button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[300px]">
-        <SheetHeader>
-          <SheetTitle className="text-left">add something gentle</SheetTitle>
+      
+      <SheetContent 
+        side="bottom" 
+        className="h-auto min-h-[280px] max-h-[70vh] border-t-0 rounded-t-2xl bg-background/95 backdrop-blur-sm shadow-lg px-6 py-6"
+      >
+        {/* Drag Handle */}
+        <div className="flex justify-center -mt-2 mb-6">
+          <div className="w-10 h-1 bg-muted-foreground/20 rounded-full" />
+        </div>
+
+        <SheetHeader className="pb-4">
+          <SheetTitle className="text-left text-lg font-normal">
+            add something gentle
+          </SheetTitle>
+          <p className="text-left text-muted-foreground text-sm">
+            what would you like to remember?
+          </p>
         </SheetHeader>
-        <div className="space-y-4 mt-6">
+
+        <div className="space-y-4">
+          {/* Input */}
           <Input
-            placeholder="what would you like to remember?"
+            placeholder="take a walk, drink water..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full px-4 py-3 text-base bg-white/50 backdrop-blur-sm border-2 border-primary/20 focus:border-primary/40 rounded-xl"
+            className="w-full px-4 py-3 text-base bg-white/50 backdrop-blur-sm border-2 border-primary/20 focus:border-primary/40 rounded-xl transition-all duration-300"
             autoFocus
           />
-          <div className="flex gap-3">
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-2">
             <Button
               variant="ghost"
               onClick={handleCancel}
-              className="flex-1"
+              className="flex-1 h-11 text-base rounded-xl"
             >
               cancel
             </Button>
             <Button
               onClick={handleAddTask}
               disabled={!inputValue.trim()}
-              className="flex-1"
+              className="flex-1 h-11 text-base rounded-xl"
             >
-              add
+              add gently
             </Button>
+          </div>
+
+          {/* Gentle Hint */}
+          <div className="text-center pt-2">
+            <p className="text-xs text-muted-foreground/60">
+              press enter to add, escape to close
+            </p>
           </div>
         </div>
       </SheetContent>

@@ -30,12 +30,12 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   
   const { setName, setEnergyLevel, completeOnboarding } = useUserStore()
 
-  // Orchestrate the welcome sequence
+  // Orchestrate the welcome sequence with gentler timing
   useEffect(() => {
     if (step === 'welcome') {
-      const subtitleTimer = setTimeout(() => setShowSubtitle(true), 1500)
-      const taglineTimer = setTimeout(() => setShowTagline(true), 2500)
-      const buttonTimer = setTimeout(() => setShowButton(true), 3500)
+      const subtitleTimer = setTimeout(() => setShowSubtitle(true), 2000)
+      const taglineTimer = setTimeout(() => setShowTagline(true), 4000)
+      const buttonTimer = setTimeout(() => setShowButton(true), 5500)
       
       return () => {
         clearTimeout(subtitleTimer)
@@ -60,7 +60,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
   const handleComplete = () => {
     completeOnboarding()
     setStep('complete')
-    setTimeout(onComplete, 2000) // Slightly longer to enjoy the moment
+    setTimeout(onComplete, 2000)
   }
 
   const skipToComplete = () => {
@@ -68,6 +68,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     if (selectedEnergy) setEnergyLevel(selectedEnergy)
     handleComplete()
   }
+
+  // Gentle easing curve for all animations
+  const gentleEase = [0.25, 0.46, 0.45, 0.94] as const
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -78,100 +81,127 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.6, ease: [0.17, 0.67, 0.83, 0.67] }}
-            className="text-center space-y-8 max-w-md"
+            transition={{ duration: 0.8, ease: gentleEase }}
+            className="text-center max-w-md"
+            style={{ minHeight: '300px' }} // Reserve space to prevent shifts
           >
-            {/* Main welcome text with staggered animation */}
-            <div className="space-y-2">
-              <motion.h1 
-                className="text-5xl font-light text-foreground tracking-tight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: [0.17, 0.67, 0.83, 0.67] }}
-              >
-                welcome
-              </motion.h1>
+            {/* Fixed layout container to prevent content jumping */}
+            <div className="relative flex flex-col items-center justify-center space-y-8 h-full">
               
-              <AnimatePresence>
-                {showSubtitle && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: [0.17, 0.67, 0.83, 0.67] }}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <span className="text-3xl font-light text-foreground">to</span>
-                    <span className="text-3xl font-medium text-foreground">everyday</span>
+              {/* Main welcome text - fixed position in flow */}
+              <div className="space-y-4 min-h-[50px] flex flex-col justify-center">
+                <motion.h1 
+                  className="text-5xl font-light text-foreground tracking-tight"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    duration: 1.2,
+                    ease: gentleEase,
+                    delay: 0.3
+                  }}
+                >
+                  welcome
+                </motion.h1>
+                
+                {/* Reserve space for subtitle to prevent layout shift */}
+                <div className="min-h-[30px] flex items-center justify-center">
+                  <AnimatePresence>
+                    {showSubtitle && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ 
+                          duration: 1.0,
+                          ease: gentleEase 
+                        }}
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <span className="text-3xl font-light text-foreground">to</span>
+                        <span className="text-3xl font-medium font-serif text-foreground">everyday</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Tagline - reserved space */}
+              <div className="min-h-[30px] flex flex-col justify-center">
+                <AnimatePresence>
+                  {showTagline && (
                     <motion.div
-                      animate={{ 
-                        rotate: [0, 10, -10, 0],
-                        scale: [1, 1.1, 1]
-                      }}
+                      initial={{ opacity: 0, y: 25 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ 
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatDelay: 3,
-                        ease: "easeInOut"
+                        duration: 0.8, 
+                        ease: gentleEase 
                       }}
+                      className="space-y-3"
                     >
+                      <div className="flex items-center justify-center gap-2">
+                        <p className="text-sm text-muted-foreground font-medium">
+                          built for people with ADHD
+                        </p>
+                      </div>
+                      <motion.p 
+                        className="text-xs text-muted-foreground/80 italic"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ 
+                          duration: 0.6, 
+                          delay: 0.3,
+                          ease: gentleEase 
+                        }}
+                      >
+                        gentle, forgiving, and made with care
+                      </motion.p>
                     </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-            {/* Tagline */}
-            <AnimatePresence>
-              {showTagline && (
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, ease: [0.17, 0.67, 0.83, 0.67] }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    <p className="text-sm text-muted-foreground font-medium">
-                      built for people with ADHD
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground/80 italic">
-                    gentle, forgiving, and made with care
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Call to action */}
-            <AnimatePresence>
-              {showButton && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, ease: [0.17, 0.67, 0.83, 0.67] }}
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Button 
-                      onClick={() => setStep('name')}
-                      className="font-normal px-8 py-2 text-base"
-                      size="lg"
+              {/* Call to action - reserved space */}
+              <div className="min-h-[50px] flex flex-col justify-center">
+                <AnimatePresence>
+                  {showButton && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ 
+                        duration: 0.8, 
+                        ease: gentleEase 
+                      }}
+                      className="space-y-4"
                     >
-                      let's begin gently
-                    </Button>
-                  </motion.div>
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.4 }}
-                    className="text-xs text-muted-foreground/60 mt-3"
-                  >
-                    this will only take a moment
-                  </motion.p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Button 
+                          onClick={() => setStep('name')}
+                          className="font-normal px-8 py-2 text-base"
+                          size="lg"
+                        >
+                          let's begin gently
+                        </Button>
+                      </motion.div>
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ 
+                          delay: 0.4,
+                          duration: 0.6,
+                          ease: gentleEase 
+                        }}
+                        className="text-xs text-muted-foreground/60"
+                      >
+                        this will only take a moment
+                      </motion.p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </motion.div>
         )}
 
@@ -181,7 +211,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: [0.17, 0.67, 0.83, 0.67] }}
+            transition={{ duration: 0.6, ease: gentleEase }}
             className="w-full max-w-md"
           >
             <Card className="shadow-sm border-0 bg-card/50 backdrop-blur-sm">
@@ -193,9 +223,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.4 }}
+                  transition={{ delay: 0.3, duration: 0.5, ease: gentleEase }}
                 >
                   <Input
                     placeholder="your name..."
@@ -211,7 +241,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   className="flex gap-2 pt-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.4 }}
+                  transition={{ delay: 0.5, duration: 0.5, ease: gentleEase }}
                 >
                   <motion.div 
                     className="flex-1"
@@ -250,7 +280,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4, ease: [0.17, 0.67, 0.83, 0.67] }}
+            transition={{ duration: 0.6, ease: gentleEase }}
             className="w-full max-w-md"
           >
             <Card className="shadow-sm border-0 bg-card/50 backdrop-blur-sm">
@@ -263,9 +293,9 @@ export function Onboarding({ onComplete }: OnboardingProps) {
               <CardContent className="space-y-4">
                 <motion.div 
                   className="grid grid-cols-5 gap-2"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.4 }}
+                  transition={{ delay: 0.3, duration: 0.5, ease: gentleEase }}
                 >
                   {energyLevels.map((energy, index) => (
                     <motion.button
@@ -280,7 +310,11 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                       whileTap={{ scale: 0.95 }}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 + index * 0.1, duration: 0.3 }}
+                      transition={{ 
+                        delay: 0.4 + index * 0.08,
+                        duration: 0.4,
+                        ease: gentleEase 
+                      }}
                     >
                       <span className="text-2xl mb-1">{energy.emoji}</span>
                       <span className="text-xs font-medium">{energy.label}</span>
@@ -288,26 +322,30 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                   ))}
                 </motion.div>
                 
-                <AnimatePresence>
-                  {selectedEnergy && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-center p-3 bg-muted/20 rounded-lg"
-                    >
-                      <p className="text-sm text-muted-foreground">
-                        {energyLevels.find(e => e.level === selectedEnergy)?.description}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Reserved space for energy description to prevent layout shift */}
+                <div className="flex items-center justify-center">
+                  <AnimatePresence>
+                    {selectedEnergy && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.5, ease: gentleEase }}
+                        className="text-center p-3 bg-muted/20 rounded-lg w-full"
+                      >
+                        <p className="text-sm text-muted-foreground">
+                          {energyLevels.find(e => e.level === selectedEnergy)?.description}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 <motion.div 
                   className="flex gap-2 pt-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6, duration: 0.4 }}
+                  transition={{ delay: 0.8, duration: 0.5, ease: gentleEase }}
                 >
                   <motion.div 
                     className="flex-1"
@@ -343,73 +381,76 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         {step === 'complete' && (
           <motion.div
             key="complete"
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.1 }}
-            transition={{ duration: 0.6, ease: [0.17, 0.67, 0.83, 0.67] }}
-            className="text-center space-y-6 max-w-md"
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.8, ease: gentleEase }}
+            className="text-center max-w-md"
+            style={{ minHeight: '200px' }} // Reserve space
           >
-            <motion.div
-              animate={{ 
-                scale: [1, 1.02, 1],
-                rotate: [0, 1, -1, 0]
-              }}
-              transition={{ 
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="space-y-3"
-            >
-              <h1 className="text-4xl font-light text-foreground tracking-tight">
-                welcome to everyday{nameInput.trim() ? `, ${nameInput}` : ''}
-              </h1>
-              <div className="flex items-center justify-center gap-2">
-                <Heart className="w-5 h-5 text-primary" />
-                <Sparkles className="w-4 h-4 text-accent" />
-                <Heart className="w-5 h-5 text-primary" />
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="space-y-2"
-            >
-              <p className="text-muted-foreground text-lg">
-                let's make today gentle
-              </p>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="text-xs text-muted-foreground/70 italic"
-              >
-                you're going to do great things
-              </motion.p>
-            </motion.div>
-
-            {/* Subtle loading indicator */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5, duration: 0.3 }}
-              className="flex justify-center"
-            >
+            <div className="flex flex-col items-center justify-center h-full">
               <motion.div
                 animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 1, 0.5]
+                  scale: [1, 1.01, 1],
+                  rotate: [0, 0.5, -0.5, 0]
                 }}
                 transition={{ 
-                  duration: 1.5,
+                  duration: 4,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="w-2 h-2 bg-accent rounded-full"
-              />
-            </motion.div>
+                className="space-y-3"
+              >
+                <h1 className="text-4xl font-light text-foreground tracking-tight">
+                  welcome to everyday{nameInput.trim() ? `, ${nameInput}` : ''}
+                </h1>
+                <div className="flex items-center justify-center gap-2">
+                  <Heart className="w-5 h-5 text-primary" />
+                  <Sparkles className="w-4 h-4 text-accent" />
+                  <Heart className="w-5 h-5 text-primary" />
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.6, ease: gentleEase }}
+                className="space-y-2"
+              >
+                <p className="text-muted-foreground text-lg">
+                  let's make today gentle
+                </p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 0.6, ease: gentleEase }}
+                  className="text-xs text-muted-foreground/70 italic"
+                >
+                  you're going to do great things
+                </motion.p>
+              </motion.div>
+
+              {/* Subtle loading indicator */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.8, duration: 0.4, ease: gentleEase }}
+                className="flex justify-center"
+              >
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="w-2 h-2 bg-accent rounded-full"
+                />
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

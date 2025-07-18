@@ -1,49 +1,160 @@
 # requirements.md - "everyday" Development Plan
 
 ## Project Vision
-A minimalist task + routine manager that feels like a warm hug for ADHD brains. Every interaction should reduce anxiety, not create it.
+A minimalist task manager that feels like a warm hug for ADHD brains. Every interaction should reduce anxiety, not create it.
 
-## Core User Stories
-
-### Primary User: Sarah, 28, ADHD + Anxiety
-- Gets overwhelmed by traditional todo apps with streaks, points, aggressive notifications
-- Forgets basic routines (water, meals, meds) when hyperfocused
+## Core User
+Sarah, 28, ADHD + Anxiety
+- Gets overwhelmed by traditional todo apps
 - Needs gentle reminders, not guilt-inducing alerts
 - Values progress over perfection
 - Easily distracted by visual clutter
 
-### Secondary User: Marcus, 35, Executive Dysfunction
-- Struggles with task initiation and completion
-- Benefits from breaking large tasks into tiny steps
-- Needs emotional safety in productivity tools
-- Prefers consistent, predictable interfaces
-
 ## Development Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Foundation ✅ COMPLETE
 **Goal**: Basic task management with warm, gentle UX
 
 #### Features
-- [ ] Simple task input with soft animations
-- [ ] Task list with gentle hover states
-- [ ] Mark complete with satisfying micro-interaction
-- [ ] Soft delete with undo option
-- [ ] Persistent storage (localStorage)
+- [x] Simple task input with soft styling
+- [x] Task list with gentle hover states
+- [x] Mark complete with satisfying micro-interaction
+- [x] Persistent storage (localStorage)
+- [x] Basic Framer Motion animations
 
-#### Technical Implementation
-- [ ] Zustand store for task state
-- [ ] Framer Motion for all interactions
-- [ ] shadcn/ui components with warm color palette
-- [ ] TypeScript interfaces for Task type
-- [ ] Custom hooks for task operations
+### Phase 2: Emotional Intelligence & Onboarding ✅ COMPLETE
+**Goal**: Make the app feel personally welcoming and emotionally supportive
 
-#### UX Priorities
-- **Gentle language**: "add something", "mark as done", "take a rest"
-- **Soft animations**: 300ms ease-out transitions
-- **Forgiving interactions**: Easy undo, no permanent deletions
-- **Immediate feedback**: Optimistic updates, smooth state changes
+#### Features - Onboarding ✅ COMPLETE
+- [x] **Gentle welcome sequence** - "welcome" → "to everyday" with sparkles
+- [x] **ADHD-friendly messaging** - "built for people with ADHD" with hearts
+- [x] **Name collection** - "what should we call you?" with soft input
+- [x] **Energy level setup** - 1-5 scale with emoji indicators and descriptions
+- [x] **Smooth transitions** - Staggered animations, backdrop blur cards
+- [x] **Skip options** - Everything can be bypassed without pressure
+- [x] **Encouraging completion** - "you're going to do great things"
 
-### Phase 2: Routines (Week 3-4)
+#### Features - Daily Experience ✅ COMPLETE
+- [x] **Day display on every load** - Always show current day before app interface
+- [x] **Gentle app transition** - Day → greeting → main interface
+- [x] **Personalized greeting** - Time-aware greetings with user's name
+- [x] **Persistent personalization** - User preferences stored locally
+- [x] **Warm loading states** - "loading gently..." instead of harsh spinners
+
+### Phase 3: Enhanced UX & Settings ✅ COMPLETE
+**Goal**: Polished interface with user customization
+
+#### Features - Interface Polish ✅ COMPLETE
+- [x] **Signature circles identity** - Consistent circular elements throughout app
+  - Circle checkboxes for tasks (brand recognition)
+  - Floating circles in empty states
+  - Gentle circle animations for visual interest
+- [x] **shadcn Sheet components** - Professional bottom sheets for panels
+  - Smooth slide-up animations
+  - Proper backdrop handling
+  - Native mobile feel
+- [x] **Mobile-first design** - Desktop limitation with gentle messaging
+- [x] **Task overflow management** - Main page shows 3 tasks, dedicated Tasks page
+- [x] **Clean navigation** - Intuitive back buttons and page transitions
+
+#### Features - User Settings ✅ COMPLETE
+- [x] **Add button positioning** - Left, center, right options
+  - Persistent localStorage storage
+  - Immediate visual feedback
+  - Accessible from both main and tasks pages
+- [x] **Theme control** - Light, dark, system preference
+  - Automatic system detection
+  - Smooth theme transitions
+  - Persistent user preference
+- [x] **Settings accessibility** - Easy-to-find settings icon in headers
+  - Consistent placement across pages
+  - Clear visual hierarchy in settings panel
+
+#### Technical Implementation ✅ COMPLETE
+- [x] Enhanced state management for settings
+- [x] localStorage persistence for user preferences
+- [x] Responsive design with mobile detection
+- [x] Theme system with CSS class management
+- [x] shadcn Sheet integration for polished UX
+
+### Phase 4: Code Architecture & Maintainability ✅ COMPLETE
+**Goal**: Clean, scalable, maintainable codebase
+
+#### Features - Modularization ✅ COMPLETE
+- [x] **Component separation** - Logical component breakdown
+  - Layout components (headers, empty states, loading)
+  - Page components (MainPage, TasksPage)
+  - Task components (TaskItem, TaskList, AddTaskSheet)
+  - Settings components (SettingsPanel)
+- [x] **Custom hooks** - Reusable logic extraction
+  - useSettings for theme and button positioning
+  - useMobile for responsive behavior
+  - Clean separation of concerns
+- [x] **Type definitions** - Comprehensive TypeScript interfaces
+  - AppState, ViewMode, ButtonPosition, ThemeMode
+  - Proper type safety throughout application
+- [x] **Utility organization** - Centralized animations and helpers
+  - All Framer Motion variants in utils/animations.ts
+  - Consistent animation timing and easing
+- [x] **Clean architecture** - Maintainable file structure
+  - Clear folder organization
+  - Single responsibility principle
+  - Easy to test and extend
+
+#### Technical Benefits ✅ COMPLETE
+- [x] **Maintainable codebase** - Easy to find and modify features
+- [x] **Testable components** - Each component can be tested in isolation
+- [x] **Scalable architecture** - Easy to add new features
+- [x] **Type safety** - Comprehensive TypeScript coverage
+- [x] **Reusable components** - DRY principle throughout
+
+### Phase 5: Encouragement System 🔄 NEXT FOCUS
+**Goal**: Make every interaction feel encouraging and supportive
+
+#### Features - Completion Celebrations 📋 NEXT UP
+- [ ] **Gentle toast notifications** - Warm messages after task completion
+  - "that's wonderful!" "you did it!" "gentle progress" 
+  - Soft slide-in from top, auto-dismiss after 3 seconds
+  - Random selection from encouraging message pool
+  - Component: `<CompletionToast />` with Framer Motion
+- [ ] **Progress acknowledgment** - Daily completion summary
+  - "you've completed 3 things today" in soft card
+  - Appears after 2+ completions, dismissible
+  - Warm colors, gentle fade-in animation
+  - Component: `<DailyProgress />` with localStorage tracking
+- [ ] **Energy-based suggestions** - Smart task recommendations
+  - "feeling low energy? try something gentle"
+  - Based on current energy level from onboarding
+  - Appears in empty state or as gentle prompt
+  - Component: `<EnergySuggestions />` with contextual tips
+
+#### Features - Daily Check-ins 📋 PLANNED
+- [ ] **Optional energy check-in** - "how are you feeling today?"
+  - Appears for returning users, easily dismissible
+  - Same 5-level emoji system from onboarding
+  - Updates suggestions and task filtering
+  - Component: `<EnergyCheckIn />` with gentle animations
+- [ ] **Gentle reminders** - Soft notifications for self-care
+  - "remember to drink water" "time for a gentle break"
+  - Browser notifications (with permission)
+  - Respectful timing, easy to disable
+  - Hook: `useGentleReminders()` with Web Notifications API
+
+#### Technical Implementation - Encouragement 📋 NEXT SPRINT
+- [ ] **Completion tracking store** - Track daily completions
+  - Zustand store for completion statistics
+  - localStorage persistence for daily/weekly data
+  - Privacy-first approach (no external tracking)
+- [ ] **Toast notification system** - Gentle celebration messages
+  - Custom toast component with warm styling
+  - Message pool with ADHD-friendly language
+  - Proper accessibility and screen reader support
+- [ ] **Suggestion engine** - Context-aware recommendations
+  - Energy level-based task suggestions
+  - Time-of-day appropriate recommendations
+  - Gentle, never pushy or overwhelming
+
+### Phase 6: Gentle Routines 📋 FUTURE
 **Goal**: Daily routine tracking without streak pressure
 
 #### Features
@@ -51,314 +162,159 @@ A minimalist task + routine manager that feels like a warm hug for ADHD brains. 
 - [ ] Gentle routine reminders (not alarms)
 - [ ] Progress visualization (encouraging, not judgmental)
 - [ ] Flexible scheduling (skip days without guilt)
-- [ ] Routine customization
+- [ ] Routine customization based on energy level
 
-#### Technical Implementation
-- [ ] Routine data structure with flexible timing
-- [ ] Background notifications (gentle, dismissible)
-- [ ] Progress tracking without streaks
-- [ ] Routine templates and customization
-- [ ] Time-based state management
+## Current Status Summary
 
-#### UX Priorities
-- **No streak anxiety**: Focus on consistency over perfection
-- **Flexible timing**: "around morning" not "8:00 AM sharp"
-- **Encouraging feedback**: "you're doing great" not "you missed yesterday"
-- **Visual progress**: Soft progress indicators, warm colors
+### ✅ What's Working Beautifully
+- **Complete onboarding flow** - Warm welcome → name → energy → celebration
+- **Daily mindfulness ritual** - Day display on every app load
+- **Task management** - Add, complete, persist with satisfying animations
+- **Personalization** - User name, energy level, time-aware greetings
+- **Signature circles identity** - Consistent circular elements create brand recognition
+- **Professional UX** - shadcn sheets, smooth animations, mobile-native feel
+- **User customization** - Button positioning, theme control, persistent settings
+- **Clean architecture** - Modular components, custom hooks, type safety
+- **Mobile-first approach** - Desktop limitation with gentle explanation
+- **Maintainable codebase** - Easy to extend and modify
 
-### Phase 3: Gentle Reminders (Week 5-6)
-**Goal**: Helpful notifications that don't create anxiety
+### 🔄 Currently Building
+- **Encouragement system** - Completion celebrations and progress acknowledgment
+- **Smart suggestions** - Energy-based and time-based task recommendations
 
-#### Features
-- [ ] Soft notification system
-- [ ] Customizable reminder timing
-- [ ] Context-aware suggestions
-- [ ] Gentle escalation (never aggressive)
-- [ ] Easy snooze/dismiss options
+### 📋 Next Sprint Priorities
+1. **Gentle toast notifications** - Warm messages after task completion
+   - Create `CompletionToast` component with message pool
+   - Integrate with task completion flow
+   - Test accessibility and timing
+2. **Daily completion summary** - "you've completed X things today"
+   - Create `DailyProgress` component with localStorage tracking
+   - Show after 2+ completions, make dismissible
+   - Warm colors and gentle animations
+3. **Energy-based suggestions** - Smart task recommendations
+   - Create `EnergySuggestions` component
+   - Integrate with energy level from onboarding
+   - Context-aware suggestions (time of day, energy level)
+4. **Optional daily check-in** - "how are you feeling?" for returning users
+   - Create `EnergyCheckIn` component
+   - Same emoji system as onboarding
+   - Easy to dismiss, updates suggestions
 
-#### Technical Implementation
-- [ ] Web Notifications API with permission handling
-- [ ] Smart timing algorithms
-- [ ] Notification queue management
-- [ ] User preference storage
-- [ ] Graceful degradation for no-permission
+### 🎯 Success Metrics So Far
+- ✅ Onboarding feels welcoming, not overwhelming
+- ✅ Daily ritual creates mindful moment
+- ✅ Task completion feels satisfying
+- ✅ Interface feels warm and safe
+- ✅ All interactions are forgiving and reversible
+- ✅ Signature circles create visual identity and brand recognition
+- ✅ Settings provide user control without complexity
+- ✅ Mobile-first design respects ADHD focus needs
+- ✅ Codebase is maintainable and scalable
+- ✅ Components are reusable and testable
 
-#### UX Priorities
-- **Soft language**: "gentle reminder" not "OVERDUE TASK"
-- **Easy dismissal**: One-click snooze or dismiss
-- **Respectful timing**: No notifications during focus time
-- **User control**: Easy to disable or customize
+## Design Identity - Signature Circles
 
-### Phase 4: Emotional Intelligence (Week 7-8)
-**Goal**: App responds to user's emotional state and energy
+### 🔵 Circle Language Throughout App
+- **Task checkboxes** - Perfect circles that fill with checkmarks
+- **Empty state decorations** - Floating circles with gentle animations
+- **Loading indicators** - Soft circular elements instead of harsh spinners
+- **Brand recognition** - Circles become synonymous with "everyday"
+- **Gentle psychology** - Circles feel complete, safe, non-threatening
+- **ADHD-friendly** - No sharp edges or aggressive geometric shapes
 
-#### Features
-- [ ] Energy level tracking (simple 1-5 scale)
-- [ ] Task suggestions based on energy
-- [ ] Gentle encouragement system
-- [ ] Rest day recognition
-- [ ] Mood-responsive UI themes
+### 🎨 Visual Consistency
+- **Rounded corners** - All UI elements use consistent border-radius
+- **Soft shadows** - Gentle depth without harsh contrast
+- **Circular buttons** - FAB and interactive elements maintain circle theme
+- **Flowing animations** - Circular motion paths and gentle rotations
+- **Warm gradients** - Circular gradient backgrounds in empty states
 
-#### Technical Implementation
-- [ ] Energy state management
-- [ ] Intelligent task filtering
-- [ ] Encouragement message system
-- [ ] Adaptive UI theming
-- [ ] Emotional data privacy
+## Language & Personality Guidelines
 
-#### UX Priorities
-- **No judgment**: Low energy days are valid
-- **Adaptive suggestions**: Heavy tasks for high energy, light tasks for low
-- **Encouraging messages**: Celebrate small wins
-- **Visual adaptation**: Softer colors on low energy days
+### 🗣️ Voice & Tone Principles
+- **Gentle encouragement** - Never pushy or demanding
+- **Personal connection** - Feels like a caring friend, not a productivity tool
+- **ADHD-aware language** - Understands executive dysfunction and anxiety
+- **Contextual personality** - Subtle, delightful moments that add warmth
+- **Forgiving messaging** - No guilt, shame, or pressure
 
-## Technical Architecture
+### ✨ Personality Moments (Use Sparingly)
+- **Character count feedback** - "that's quite detailed! ✨" (appears after 50+ characters)
+- **Gentle observations** - "you're being very thoughtful today"
+- **Encouraging responses** - "that sounds important" or "good thinking"
+- **Completion celebrations** - "that's wonderful!" "you did it!" "gentle progress"
+- **Rest acknowledgment** - "taking breaks is productive too"
 
-### State Management (Zustand)
-```typescript
-interface AppState {
-  tasks: Task[]
-  routines: Routine[]
-  userPreferences: UserPrefs
-  energyLevel: number
-  currentView: 'tasks' | 'routines' | 'settings'
-}
-```
+### 🎯 Emoji Usage Guidelines
+- **Sparingly used** - Only when they add genuine warmth or clarity
+- **Contextually appropriate** - Must feel natural, not forced
+- **Accessibility considered** - Screen readers can handle them gracefully
+- **Brand consistent** - Soft, warm emojis that match our gentle aesthetic
+- **Never overwhelming** - Maximum 1-2 emojis per interaction
 
-### Component Structure
-```
-src/
-├── components/
-│   ├── ui/              # shadcn/ui components
-│   ├── tasks/           # Task-related components
-│   ├── routines/        # Routine-related components
-│   ├── animations/      # Framer Motion wrappers
-│   └── layout/          # App layout components
-├── stores/
-│   ├── tasks.ts         # Task state management
-│   ├── routines.ts      # Routine state management
-│   └── preferences.ts   # User preferences
-├── hooks/
-│   ├── useTasks.ts      # Task operations
-│   ├── useRoutines.ts   # Routine operations
-│   └── useAnimations.ts # Animation helpers
-└── types/
-    ├── task.ts          # Task type definitions
-    ├── routine.ts       # Routine type definitions
-    └── user.ts          # User preference types
-```
+### 📝 Language Examples
 
-### Animation Strategy (Framer Motion)
-- **Page transitions**: Soft slide-ins, 400ms duration
-- **Component entrance**: Gentle fade-up, 300ms duration
-- **Micro-interactions**: Subtle scale/color changes, 200ms duration
-- **Loading states**: Gentle pulse animations, never harsh spinners
-- **Success feedback**: Soft bounce or glow effects
-- **Error states**: Gentle shake, warm error colors
+#### ✅ Good Examples:
+- "add something gentle" (warm, non-pressuring)
+- "that's perfectly okay" (forgiving, accepting)
+- "loading gently..." (patient, calm)
+- "what would you like to remember?" (personal, caring)
+- "make everyday feel just right" (customizable, personal)
+- "that's quite detailed! ✨" (encouraging, personality moment)
 
-### Data Persistence Strategy
-- **Primary**: localStorage for immediate access
-- **Backup**: IndexedDB for larger datasets (future)
-- **Sync**: Optional cloud sync (Phase 5+)
-- **Privacy**: All data stays local by default
+#### ❌ Avoid:
+- "ADD TASK NOW!" (aggressive, demanding)
+- "You missed your goal" (guilt-inducing)
+- "Productivity dashboard" (corporate, cold)
+- "Complete all tasks" (overwhelming)
+- "🎉🔥💪 CRUSH YOUR GOALS! 🚀✨🎯" (emoji overload, aggressive)
 
-## Design System Specifications
+### 🧠 ADHD-Friendly Language Patterns
+- **Present tense** - "what would you like to remember?" not "what will you do?"
+- **Gentle suggestions** - "you might want to..." not "you should..."
+- **Permission-giving** - "that's perfectly okay" not "it's fine"
+- **Process-focused** - "gentle progress" not "achievement unlocked"
+- **Energy-aware** - "feeling low energy? try something gentle"
 
-### Typography Hierarchy
-```css
-/* Headings - soft, rounded fonts */
-h1: 2rem, font-weight: 300, letter-spacing: -0.02em
-h2: 1.5rem, font-weight: 400, letter-spacing: -0.01em
-h3: 1.25rem, font-weight: 500
+## Technical Stack
+- React 19 + TypeScript ✅
+- Tailwind CSS 4 (warm color palette) ✅
+- shadcn/ui components (with Sheet integration) ✅
+- Framer Motion (gentle animations) ✅
+- Zustand (state management) ✅
+- localStorage (data persistence + settings) ✅
 
-/* Body text - comfortable reading */
-body: 1rem, font-weight: 400, line-height: 1.6
-small: 0.875rem, font-weight: 400, opacity: 0.8
-```
-
-### Spacing System (Tailwind)
-- **Micro**: 0.25rem (1) - Icon padding
-- **Small**: 0.5rem (2) - Button padding
-- **Medium**: 1rem (4) - Component spacing
-- **Large**: 1.5rem (6) - Section spacing
-- **XL**: 2rem (8) - Page margins
-
-### Animation Timing
-```typescript
-export const animations = {
-  fast: { duration: 0.2, ease: "easeOut" },
-  medium: { duration: 0.3, ease: "easeOut" },
-  slow: { duration: 0.4, ease: "easeOut" },
-  bounce: { type: "spring", damping: 15, stiffness: 300 }
-}
-```
-
-## User Experience Flow
-
-### First-Time User Journey
-1. **Welcome screen**: Gentle introduction, no overwhelming onboarding
-2. **Add first task**: Simple, encouraging prompt
-3. **Complete first task**: Satisfying animation, gentle celebration
-4. **Discover routines**: Soft introduction after 2-3 tasks completed
-5. **Customize preferences**: Optional, never forced
-
-### Daily User Flow
-1. **Morning check-in**: Optional energy level, routine suggestions
-2. **Task management**: Add, complete, gentle reminders throughout day
-3. **Evening reflection**: Optional, encouraging progress summary
-4. **Flexible adaptation**: App adjusts to user's patterns over time
-
-### Error Recovery Flow
-- **Network issues**: Graceful offline mode, sync when reconnected
-- **Data loss**: Gentle recovery options, never blame user
-- **Overwhelm**: "Take a break" mode, simplified interface
-- **Mistakes**: Easy undo for all actions, forgiving interactions
-
-## Accessibility Requirements
-
-### WCAG 2.1 AA Compliance
-- [ ] Color contrast ratios ≥ 4.5:1 for normal text
-- [ ] Color contrast ratios ≥ 3:1 for large text
-- [ ] Keyboard navigation for all interactive elements
-- [ ] Screen reader compatibility with proper ARIA labels
-- [ ] Focus indicators visible and consistent
-
-### ADHD-Specific Accessibility
-- [ ] Reduced motion option for users sensitive to animation
-- [ ] High contrast mode for focus difficulties
-- [ ] Large touch targets (minimum 44px) for motor difficulties
-- [ ] Clear visual hierarchy to reduce cognitive load
-- [ ] Consistent interaction patterns throughout app
-
-### Neurodivergent-Friendly Features
-- [ ] Customizable notification timing and intensity
-- [ ] Option to hide time-based pressure (no visible clocks)
-- [ ] Gentle mode for high-anxiety days
-- [ ] Predictable navigation patterns
-- [ ] Clear undo/redo functionality
-
-## Performance Requirements
-
-### Core Web Vitals Targets
-- **LCP (Largest Contentful Paint)**: < 2.5s
-- **FID (First Input Delay)**: < 100ms
-- **CLS (Cumulative Layout Shift)**: < 0.1
-
-### Animation Performance
-- **60fps**: All animations must maintain smooth framerate
-- **GPU acceleration**: Use transform/opacity for animations
-- **Reduced motion**: Respect user's motion preferences
-- **Battery consideration**: Pause animations when battery low
-
-### Bundle Size Targets
-- **Initial bundle**: < 100KB gzipped
-- **Total bundle**: < 300KB gzipped
-- **Lazy loading**: Non-critical components loaded on demand
-- **Tree shaking**: Remove unused code aggressively
-
-## Testing Strategy
-
-### Unit Testing
-- [ ] Task operations (add, complete, delete, undo)
-- [ ] Routine scheduling and tracking
-- [ ] State management (Zustand stores)
-- [ ] Utility functions and helpers
-
-### Integration Testing
-- [ ] User workflows (add task → complete → celebrate)
-- [ ] Data persistence and recovery
-- [ ] Animation sequences and timing
-- [ ] Accessibility features
-
-### User Testing with ADHD Community
-- [ ] Task completion flows with real users
-- [ ] Emotional response to animations and feedback
-- [ ] Overwhelm testing (can users handle the interface?)
-- [ ] Long-term usage patterns and adaptation
-
-## Success Metrics
-
-### Engagement Metrics (Positive)
-- **Daily return rate**: Users coming back consistently
-- **Task completion rate**: Users actually finishing tasks
-- **Session duration**: Appropriate time spent (not too long)
-- **Feature adoption**: Users discovering and using routines
-
-### Wellness Metrics (Primary)
-- **Stress reduction**: Self-reported anxiety levels
-- **Routine consistency**: Gentle habit formation
-- **User satisfaction**: Emotional response to app
-- **Accessibility usage**: Features being used by neurodivergent users
-
-### Technical Metrics
-- **Performance**: Core Web Vitals staying within targets
-- **Error rates**: Minimal crashes or data loss
-- **Accessibility**: WCAG compliance maintained
-- **Battery usage**: Minimal impact on device performance
-
-## Future Considerations (Phase 5+)
-
-### Advanced Features
-- [ ] Gentle social features (optional accountability partners)
-- [ ] Smart task suggestions based on patterns
-- [ ] Integration with calendar apps (non-intrusive)
-- [ ] Voice input for hands-free task addition
-- [ ] Wearable device integration for gentle reminders
-
-### Platform Expansion
-- [ ] Progressive Web App (PWA) for mobile
-- [ ] Desktop app (Electron) for deep work sessions
-- [ ] Browser extension for quick task capture
-- [ ] API for third-party integrations
-
-### Data Intelligence
-- [ ] Pattern recognition for optimal task timing
-- [ ] Personalized encouragement messages
-- [ ] Energy level prediction based on usage
-- [ ] Gentle insights without overwhelming data
-
-## Development Principles
-
-### Code Quality
-- **TypeScript strict mode**: Catch errors early
-- **Component composition**: Reusable, testable components
-- **Custom hooks**: Encapsulate complex logic
-- **Error boundaries**: Graceful error handling
-- **Performance monitoring**: Track real user metrics
-
-### Team Collaboration
-- **Accessibility reviews**: Every feature checked for ADHD-friendliness
-- **User feedback loops**: Regular testing with target users
-- **Incremental delivery**: Small, frequent improvements
-- **Documentation**: Clear, beginner-friendly code comments
-
-### Ethical Considerations
-- **Privacy first**: No tracking, no data selling
-- **Inclusive design**: Works for all neurodivergent users
-- **No dark patterns**: Never manipulate users for engagement
-- **Gentle monetization**: If needed, never exploit user vulnerabilities
-- **Open source consideration**: Share learnings with community
-
-## Risk Mitigation
-
-### Technical Risks
-- **Browser compatibility**: Test across all major browsers
-- **Performance degradation**: Monitor and optimize continuously
-- **Data loss**: Robust backup and recovery systems
-- **Security**: Secure local storage, no sensitive data exposure
-
-### User Experience Risks
-- **Feature creep**: Resist adding overwhelming features
-- **Accessibility regression**: Continuous accessibility testing
-- **Animation overload**: Provide motion reduction options
-- **Cognitive overload**: Regular simplification reviews
-
-### Business Risks
-- **Niche market**: Focus on quality over quantity
-- **Sustainability**: Plan for long-term maintenance
-- **Competition**: Differentiate through genuine care for users
-- **Scope creep**: Maintain focus on core ADHD-friendly features
+## Design Principles
+- **Warm colors**: Terracotta, sage, peach - no harsh whites/blacks ✅
+- **Soft language**: Encouraging, never judgmental ✅
+- **Gentle interactions**: Smooth hover states, easy undo ✅
+- **Minimal cognitive load**: Few decisions, clear hierarchy ✅
+- **Personal connection**: Use their name, remember preferences ✅
+- **Daily mindfulness**: Day display creates moment of presence ✅
+- **Emotional safety**: Every interaction feels forgiving ✅
+- **Signature circles**: Consistent circular identity throughout ✅
+- **User control**: Customizable settings without overwhelming options ✅
+- **Clean code**: Maintainable, testable, scalable architecture ✅
+- **Contextual personality**: Subtle moments that add warmth without overwhelming ✅
+- **Sparing emoji use**: Only when they genuinely enhance the experience ✅
 
 ---
 
-This requirements document will evolve as we learn more about our users and their needs. The key is maintaining our core principle: every decision should make life easier for ADHD brains, not harder.
+**Key Principle**: Remove features that add complexity. Add features that reduce anxiety.
+
+**Personality Principle**: Add gentle, contextual moments that make users smile - but never overwhelm. A single "that's quite detailed! ✨" is worth more than a dozen generic celebrations.
+
+**Current Focus**: The foundation is rock-solid and beautifully architected. Now we add gentle encouragement that makes users feel celebrated, not pressured. Time to make task completion feel like a warm hug! ✨
+
+**Architecture Win**: Clean, modular codebase means we can add features quickly without breaking existing functionality. The ADHD-friendly design principles are baked into every component. 🔵
+
+## 🚀 **Ready for Phase 5: Encouragement System!**
+
+The codebase is now perfectly structured to add:
+1. **Gentle toast celebrations** when tasks are completed
+2. **Daily progress acknowledgment** without pressure
+3. **Energy-based suggestions** that feel helpful, not pushy
+4. **Optional check-ins** that users can easily dismiss
+5. **Contextual personality moments** that add warmth sparingly
+
+Let's make every interaction feel like a gentle celebration! 🎉

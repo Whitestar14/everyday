@@ -52,8 +52,11 @@ export function TaskList({
         )}
       </div>
 
-      <div className="space-y-3">
-        <AnimatePresence>
+      <motion.div 
+        layout
+        className="space-y-3"
+      >
+        <AnimatePresence mode="popLayout">
           {displayTasks.map((task, index) => (
             <TaskItem
               key={task.id}
@@ -64,7 +67,7 @@ export function TaskList({
             />
           ))}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
       {hasMore && showViewAll && onViewAll && (
         <motion.div

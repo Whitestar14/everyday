@@ -47,7 +47,7 @@ export function MainHeader({
         }
       />
 
-      <h1 className="text-4xl font-light text-foreground tracking-tight mb-4">
+      <h1 className="text-4xl font-serif font-light text-foreground tracking-tight mb-4">
         everyday
       </h1>
       

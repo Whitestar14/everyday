@@ -20,7 +20,7 @@ export function DesktopNotSupported() {
         </motion.div>
         
         <div className="space-y-4">
-          <h1 className="text-3xl font-light text-foreground tracking-tight">everyday</h1>
+          <h1 className="text-3xl font-serif font-light text-foreground tracking-tight">everyday</h1>
           <p className="text-lg text-muted-foreground">designed for mobile minds</p>
           <p className="text-sm text-muted-foreground/70">
             this app is crafted specifically for mobile use, where ADHD brains can focus best

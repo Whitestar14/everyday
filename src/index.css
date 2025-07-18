@@ -11,7 +11,16 @@
   src: url(./assets/fonts/Outfit.ttf) format('truetype');
 }
 
+@font-face {
+  font-family: 'Lora';
+  src: url(./assets/fonts/Lora.ttf) format('truetype');
+}
+
 @theme {
+  /* Font Family System - Obtained from the Google Fonts API in production */
+  --font-sans: 'Outfit', sans-serif;
+  --font-serif: 'Lora', serif;
+
   /* Radius Scales - Derived from a base `--radius` */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -180,6 +189,6 @@
     /* Add subtle texture for warmth */
     background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
     background-size: 20px 20px;
-    font-family: 'Outfit', sans-serif;
+    font-family: var(--font-sans);
   }
 }

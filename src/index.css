@@ -1,0 +1,179 @@
+/*
+ * Tailwind CSS 4.1 Configuration
+ * Prioritizing CSS-first theming with Oklch for an ADHD-friendly, warm palette.
+ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  /* Radius Scales - Derived from a base `--radius` */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Color System - Mapped to your CSS variables for easy theming */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Chart Colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar Colors (if needed) */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Softer, more rounded for ADHD-friendly feel */
+  --radius: 0.875rem;
+
+  /* Warm, cozy backgrounds - no stark whites */
+  --background: oklch(0.98 0.008 45); /* Warm cream #FEFCF8 */
+  --foreground: oklch(0.25 0.015 35); /* Warm charcoal #3A3530 */
+
+  /* Soft terracotta primary - welcoming, not aggressive */
+  --primary: oklch(0.65 0.12 25); /* Soft terracotta #E07A5F */
+  --primary-foreground: oklch(0.97 0.008 45); /* Warm cream */
+
+  /* Calming sage secondary */
+  --secondary: oklch(0.58 0.05 125); /* Muted sage #81A684 */
+  --secondary-foreground: oklch(0.22 0.02 125); /* Deep forest #2D3A2E */
+
+  /* Gentle card backgrounds */
+  --card: oklch(0.99 0.005 45); /* Slightly warmer than background */
+  --card-foreground: oklch(0.25 0.015 35); /* Same as foreground */
+
+  /* Warm muted tones */
+  --muted: oklch(0.94 0.012 40); /* Warm beige #F5F1EB */
+  --muted-foreground: oklch(0.45 0.008 35); /* Medium warm gray #6B6560 */
+
+  /* Encouraging peach accent */
+  --accent: oklch(0.67 0.11 45); /* Soft peach #F4A261 */
+  --accent-foreground: oklch(0.25 0.015 35); /* Warm charcoal */
+
+  /* Gentle destructive - muted coral, less alarming */
+  --destructive: oklch(0.58 0.10 25); /* Muted coral #D67B5A */
+  --destructive-foreground: oklch(0.97 0.008 45); /* Warm cream */
+
+  /* Subtle warm borders */
+  --border: oklch(0.88 0.008 40); /* Light warm gray #E8E3DD */
+  --input: oklch(0.88 0.008 40); /* Same as border */
+  --ring: oklch(0.65 0.12 25); /* Matches primary */
+
+  /* Warm chart colors for future data visualization */
+  --chart-1: oklch(0.65 0.12 25); /* Terracotta */
+  --chart-2: oklch(0.58 0.05 125); /* Sage */
+  --chart-3: oklch(0.67 0.11 45); /* Peach */
+  --chart-4: oklch(0.72 0.08 65); /* Warm yellow */
+  --chart-5: oklch(0.55 0.08 15); /* Warm brown */
+
+  /* Popover styling */
+  --popover: oklch(0.99 0.005 45);
+  --popover-foreground: oklch(0.25 0.015 35);
+
+  /* Sidebar (if needed later) */
+  --sidebar: oklch(0.96 0.008 45);
+  --sidebar-foreground: oklch(0.25 0.015 35);
+  --sidebar-primary: oklch(0.65 0.12 25);
+  --sidebar-primary-foreground: oklch(0.97 0.008 45);
+  --sidebar-accent: oklch(0.94 0.012 40);
+  --sidebar-accent-foreground: oklch(0.25 0.015 35);
+  --sidebar-border: oklch(0.88 0.008 40);
+  --sidebar-ring: oklch(0.65 0.12 25);
+}
+
+/*
+ * Dark Theme Variables
+ * Applied when the `.dark` class is present on an ancestor.
+ */
+.dark {
+  /* Dark mode with warm undertones - no harsh blacks */
+  --background: oklch(0.15 0.008 35); /* Warm dark brown */
+  --foreground: oklch(0.95 0.005 45); /* Warm cream */
+
+  --primary: oklch(0.70 0.10 25); /* Lighter terracotta for dark mode */
+  --primary-foreground: oklch(0.15 0.008 35);
+
+  --secondary: oklch(0.35 0.03 125); /* Darker sage */
+  --secondary-foreground: oklch(0.95 0.005 45);
+
+  --card: oklch(0.18 0.008 35); /* Slightly lighter than background */
+  --card-foreground: oklch(0.95 0.005 45);
+
+  --muted: oklch(0.22 0.008 35); /* Warm dark muted */
+  --muted-foreground: oklch(0.65 0.005 40);
+
+  --accent: oklch(0.72 0.09 45); /* Brighter peach for dark mode */
+  --accent-foreground: oklch(0.15 0.008 35);
+
+  --destructive: oklch(0.62 0.08 25); /* Softer destructive in dark */
+  --destructive-foreground: oklch(0.95 0.005 45);
+
+  --border: oklch(0.25 0.008 35); /* Warm dark border */
+  --input: oklch(0.28 0.008 35); /* Slightly lighter input */
+  --ring: oklch(0.70 0.10 25);
+
+  --popover: oklch(0.18 0.008 35);
+  --popover-foreground: oklch(0.95 0.005 45);
+
+  /* Dark mode charts */
+  --chart-1: oklch(0.70 0.10 25);
+  --chart-2: oklch(0.60 0.04 125);
+  --chart-3: oklch(0.72 0.09 45);
+  --chart-4: oklch(0.75 0.07 65);
+  --chart-5: oklch(0.58 0.06 15);
+
+  /* Dark sidebar */
+  --sidebar: oklch(0.18 0.008 35);
+  --sidebar-foreground: oklch(0.95 0.005 45);
+  --sidebar-primary: oklch(0.70 0.10 25);
+  --sidebar-primary-foreground: oklch(0.15 0.008 35);
+  --sidebar-accent: oklch(0.22 0.008 35);
+  --sidebar-accent-foreground: oklch(0.95 0.005 45);
+  --sidebar-border: oklch(0.25 0.008 35);
+  --sidebar-ring: oklch(0.70 0.10 25);
+}
+
+/*
+ * Base Layer Styles
+ * Global resets and default element styles.
+ */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Add subtle texture for warmth */
+    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+}

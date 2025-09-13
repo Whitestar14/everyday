@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { validateEnergyLevel, handleStorageError, handleValidationError } from '@/utils/errorHandling'
 
 interface UserPreferences {
   name: string
@@ -10,14 +12,14 @@ interface UserPreferences {
 interface UserStore {
   preferences: UserPreferences
   isLoaded: boolean
+  error: string | null
   setName: (name: string) => void
   setEnergyLevel: (level: number) => void
   completeOnboarding: () => void
   updateLastVisit: () => void
   loadPreferences: () => void
+  clearError: () => void
 }
-
-const STORAGE_KEY = 'everyday-user-preferences'
 
 const defaultPreferences: UserPreferences = {
   name: '',
@@ -26,60 +28,85 @@ const defaultPreferences: UserPreferences = {
   lastVisit: null
 }
 
-const saveToStorage = (preferences: UserPreferences) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
-  } catch (error) {
-    console.warn('Failed to save user preferences:', error)
-  }
-}
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set, get) => ({
+      preferences: defaultPreferences,
+      isLoaded: false,
+      error: null,
+      
+      setName: (name: string) => {
+        try {
+          if (typeof name !== 'string') {
+            throw new Error('Name must be a string')
+          }
+          
+          set((state) => ({
+            preferences: { ...state.preferences, name: name.trim() },
+            error: null
+          }))
+        } catch (error) {
+          const appError = handleValidationError(error, 'setName')
+          set({ error: appError.message })
+        }
+      },
+      
+      setEnergyLevel: (energyLevel: number) => {
+        try {
+          validateEnergyLevel(energyLevel)
+          
+          set((state) => ({
+            preferences: { ...state.preferences, energyLevel },
+            error: null
+          }))
+        } catch (error) {
+          const appError = handleValidationError(error, 'setEnergyLevel')
+          set({ error: appError.message })
+        }
+      },
+      
+      completeOnboarding: () => {
+        set((state) => ({
+          preferences: { ...state.preferences, hasCompletedOnboarding: true },
+          error: null
+        }))
+      },
+      
+      updateLastVisit: () => {
+        set((state) => ({
+          preferences: { ...state.preferences, lastVisit: new Date() },
+          error: null
+        }))
+      },
+      
+      loadPreferences: () => {
+        set({ isLoaded: true, error: null })
+      },
 
-const loadFromStorage = (): UserPreferences => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (!saved) return defaultPreferences
-    
-    const parsed = JSON.parse(saved)
-    return {
-      ...parsed,
-      lastVisit: parsed.lastVisit ? new Date(parsed.lastVisit) : null
+      clearError: () => {
+        set({ error: null })
+      }
+    }),
+    {
+      name: 'everyday-user-preferences',
+      partialize: (state) => ({ preferences: state.preferences }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          try {
+            // Convert date strings back to Date objects
+            state.preferences = {
+              ...state.preferences,
+              lastVisit: state.preferences.lastVisit ? new Date(state.preferences.lastVisit as any) : null
+            }
+            state.isLoaded = true
+            state.error = null
+          } catch (error) {
+            const appError = handleStorageError(error, 'onRehydrateStorage')
+            state.error = appError.message
+            state.isLoaded = true
+          }
+        }
+      },
     }
-  } catch (error) {
-    console.warn('Failed to load user preferences:', error)
-    return defaultPreferences
-  }
-}
-
-export const useUserStore = create<UserStore>((set, get) => ({
-  preferences: defaultPreferences,
-  isLoaded: false,
-  
-  setName: (name: string) => {
-    const newPreferences = { ...get().preferences, name }
-    set({ preferences: newPreferences })
-    saveToStorage(newPreferences)
-  },
-  
-  setEnergyLevel: (energyLevel: number) => {
-    const newPreferences = { ...get().preferences, energyLevel }
-    set({ preferences: newPreferences })
-    saveToStorage(newPreferences)
-  },
-  
-  completeOnboarding: () => {
-    const newPreferences = { ...get().preferences, hasCompletedOnboarding: true }
-    set({ preferences: newPreferences })
-    saveToStorage(newPreferences)
-  },
-  
-  updateLastVisit: () => {
-    const newPreferences = { ...get().preferences, lastVisit: new Date() }
-    set({ preferences: newPreferences })
-    saveToStorage(newPreferences)
-  },
-  
-  loadPreferences: () => {
-    const savedPreferences = loadFromStorage()
-    set({ preferences: savedPreferences, isLoaded: true })
-  }
-}))
+  )
+)

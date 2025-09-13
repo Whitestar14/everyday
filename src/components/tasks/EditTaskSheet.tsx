@@ -1,16 +1,19 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { Trash2 } from "lucide-react"
+import { useState, useEffect } from "react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import type { Task } from "@/types/app"
 
-interface AddTaskSheetProps {
+interface EditTaskSheetProps {
+  task: Task | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onAddTask: (text: string, type: "task" | "routine") => void
-  buttonPositionStyles: string
+  onUpdateTask: (id: string, updates: Partial<Pick<Task, "text" | "type">>) => void
+  onDeleteTask?: (id: string) => void
 }
 
 // Reusable task type toggle component
@@ -49,34 +52,49 @@ function TaskTypeToggle({
   )
 }
 
-export function AddTaskSheet({ open, onOpenChange, onAddTask }: AddTaskSheetProps) {
+export function EditTaskSheet({ task, open, onOpenChange, onUpdateTask, onDeleteTask }: EditTaskSheetProps) {
   const [inputValue, setInputValue] = useState("")
   const [taskType, setTaskType] = useState<"task" | "routine">("task")
 
-  const handleAddTask = () => {
-    if (inputValue.trim()) {
-      onAddTask(inputValue.trim(), taskType)
-      setInputValue("")
-      setTaskType("task")
+  // Initialize form when task changes
+  useEffect(() => {
+    if (task) {
+      setInputValue(task.text)
+      setTaskType(task.type)
+    }
+  }, [task])
+
+  const handleUpdateTask = () => {
+    if (inputValue.trim() && task) {
+      onUpdateTask(task.id, {
+        text: inputValue.trim(),
+        type: taskType,
+      })
       onOpenChange(false)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleAddTask()
+      handleUpdateTask()
     } else if (e.key === "Escape") {
       onOpenChange(false)
-      setInputValue("")
-      setTaskType("task")
     }
   }
 
   const handleCancel = () => {
     onOpenChange(false)
-    setInputValue("")
-    setTaskType("task")
   }
+
+  const handleDeleteTask = () => {
+    if (task && onDeleteTask) {
+      onDeleteTask(task.id)
+      onOpenChange(false)
+    }
+  }
+
+  // Don't render if no task
+  if (!task) return null
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -89,9 +107,9 @@ export function AddTaskSheet({ open, onOpenChange, onAddTask }: AddTaskSheetProp
         </div>
 
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-left text-lg font-normal">add something gentle</SheetTitle>
+          <SheetTitle className="text-left text-lg font-normal">edit task gently</SheetTitle>
           <SheetDescription className="text-left text-muted-foreground text-sm">
-            what would you like to remember?
+            make changes to your task
           </SheetDescription>
         </SheetHeader>
 
@@ -111,13 +129,26 @@ export function AddTaskSheet({ open, onOpenChange, onAddTask }: AddTaskSheetProp
             <Button variant="ghost" onClick={handleCancel} className="flex-1 h-11 text-base rounded-xl">
               cancel
             </Button>
-            <Button onClick={handleAddTask} disabled={!inputValue.trim()} className="flex-1 h-11 text-base rounded-xl">
-              add gently
+            <Button onClick={handleUpdateTask} disabled={!inputValue.trim()} className="flex-1 h-11 text-base rounded-xl">
+              save changes
             </Button>
           </div>
 
+          {onDeleteTask && (
+            <div className="pt-2">
+              <Button 
+                variant="ghost" 
+                onClick={handleDeleteTask} 
+                className="w-full h-11 text-base rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                delete task
+              </Button>
+            </div>
+          )}
+
           <div className="text-center pt-2">
-            <p className="text-xs text-muted-foreground/60">press enter to add, escape to close</p>
+            <p className="text-xs text-muted-foreground/60">press enter to save, escape to close</p>
           </div>
         </div>
       </SheetContent>

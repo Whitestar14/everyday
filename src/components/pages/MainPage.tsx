@@ -1,29 +1,22 @@
-import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { MainHeader } from '@/components/layout/MainHeader'
-import { TaskList } from '@/components/tasks/TaskList'
-import { EmptyState } from '@/components/layout/EmptyState'
-import { AddTaskSheet } from '@/components/tasks/AddTaskSheet'
-import type { ButtonPosition, ThemeMode } from '@/types/app'
+"use client"
 
-interface Task {
-  id: string
-  text: string
-  createdAt: Date
-}
+import { useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { MainHeader } from "@/components/layout/MainHeader"
+import { TaskList } from "@/components/tasks/TaskList"
+import { EmptyState } from "@/components/layout/EmptyState"
+import { AddTaskButton } from "@/components/tasks/AddTaskButton"
+import { useModal } from "@/contexts/ModalContext"
+import type { Task } from "@/types/app"
 
 interface MainPageProps {
   tasks: Task[]
   completingTasks: Set<string>
   onCompleteTask: (taskId: string) => void
-  onAddTask: (text: string) => void
+  onAddTask: (text: string, type: "task" | "routine") => void
+  onDeleteTask: (id: string) => void
   onViewAllTasks: () => void
   greeting: string
-  buttonPosition: ButtonPosition
-  themeMode: ThemeMode
-  onButtonPositionChange: (position: ButtonPosition) => void
-  onThemeChange: (theme: ThemeMode) => void
-  getButtonPositionStyles: () => string
 }
 
 const MAX_TASKS_ON_MAIN = 3
@@ -32,17 +25,16 @@ export function MainPage({
   tasks,
   completingTasks,
   onCompleteTask,
-  onAddTask,
+  onDeleteTask,
   onViewAllTasks,
   greeting,
-  buttonPosition,
-  themeMode,
-  onButtonPositionChange,
-  onThemeChange,
-  getButtonPositionStyles
 }: MainPageProps) {
-  const [showAddSheet, setShowAddSheet] = useState(false)
   const [showSettingsSheet, setShowSettingsSheet] = useState(false)
+  const { openEditTask } = useModal()
+
+  const handleEditTask = (task: Task) => {
+    openEditTask(task)
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,10 +44,6 @@ export function MainPage({
           greeting={greeting}
           showSettingsSheet={showSettingsSheet}
           onShowSettingsSheet={setShowSettingsSheet}
-          buttonPosition={buttonPosition}
-          themeMode={themeMode}
-          onButtonPositionChange={onButtonPositionChange}
-          onThemeChange={onThemeChange}
         />
 
         {/* Recent Tasks Preview */}
@@ -65,6 +53,8 @@ export function MainPage({
               tasks={tasks}
               completingTasks={completingTasks}
               onCompleteTask={onCompleteTask}
+              onEditTask={handleEditTask}
+              onDeleteTask={onDeleteTask}
               onViewAll={onViewAllTasks}
               maxTasks={MAX_TASKS_ON_MAIN}
             />
@@ -72,9 +62,7 @@ export function MainPage({
         </AnimatePresence>
 
         {/* Empty State */}
-        <AnimatePresence>
-          {tasks.length === 0 && <EmptyState />}
-        </AnimatePresence>
+        <AnimatePresence>{tasks.length === 0 && <EmptyState />}</AnimatePresence>
 
         {/* Simple footer */}
         <motion.div
@@ -83,20 +71,12 @@ export function MainPage({
           transition={{ delay: 1 }}
           className="text-center mt-16 pb-20"
         >
-          <div className="text-xs text-muted-foreground/40">
-            made with ❤️ for ADHD brains
-          </div>
+          <div className="text-xs text-muted-foreground/40">made with ❤️ for ADHD brains</div>
         </motion.div>
       </div>
 
-      {/* Add Task Sheet */}
-      <AddTaskSheet
-        open={showAddSheet}
-        onOpenChange={setShowAddSheet}
-        onAddTask={onAddTask}
-        buttonPositionStyles={getButtonPositionStyles()}
-      />
+      {/* Add Task Button */}
+      <AddTaskButton />
     </div>
   )
 }
-

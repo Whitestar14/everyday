@@ -15,7 +15,7 @@ export const gentleFadeIn: Variants = {
     opacity: 1,
     transition: { 
       duration: 0.5, 
-      ease: [0.25, 0.46, 0.45, 0.94] as const // Gentle easing curve
+      ease: [0.25, 0.46, 0.45, 0.94] as const
     }
   },
   exit: { 
@@ -40,8 +40,8 @@ export const slideUp: Variants = {
 export const taskSlide: Variants = {
   hidden: { 
     opacity: 0, 
-    y: 8, // Reduced from x: -20 to gentle y movement
-    scale: 0.98, // Subtle scale change
+    y: 8,
+    scale: 0.98,
     height: 0,
     marginBottom: 0
   },
@@ -52,20 +52,20 @@ export const taskSlide: Variants = {
     height: "auto",
     marginBottom: 12,
     transition: { 
-      duration: 0.4, // Slightly longer for gentleness
-      ease: [0.25, 0.46, 0.45, 0.94] as const, // Softer easing
+      duration: 0.4,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
       height: { duration: 0.4 },
       marginBottom: { duration: 0.4 }
     }
   },
   exit: { 
     opacity: 0, 
-    y: -8, // Gentle upward exit
+    y: -8,
     scale: 0.98,
     height: 0,
     marginBottom: 0,
     transition: { 
-      duration: 0.5, // Longer exit for smoothness
+      duration: 0.5,
       ease: [0.25, 0.46, 0.45, 0.94] as const,
       height: { duration: 0.4, delay: 0.1 },
       marginBottom: { duration: 0.4, delay: 0.1 }
@@ -76,9 +76,9 @@ export const taskSlide: Variants = {
 export const completionPulse: Variants = {
   initial: { scale: 1 },
   completing: { 
-    scale: [1, 1.01, 1], // Reduced pulse intensity
+    scale: [1, 1.01, 1],
     transition: { 
-      duration: 0.8, // Slower, more gentle
+      duration: 0.8,
       ease: [0.25, 0.46, 0.45, 0.94] as const 
     }
   }
@@ -91,6 +91,52 @@ export const circleFloat: Variants = {
       duration: 4,
       repeat: Infinity,
       ease: "easeInOut"
+    }
+  }
+}
+
+// Gentle task slide animation without scale effects
+export const gentleTaskSlide: Variants = {
+  hidden: { 
+    opacity: 0, 
+    y: 8,
+    height: 0,
+    marginBottom: 0
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    height: "auto",
+    marginBottom: 12,
+    transition: { 
+      duration: 0.4,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+      height: { duration: 0.4 },
+      marginBottom: { duration: 0.4 }
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    y: -8,
+    height: 0,
+    marginBottom: 0,
+    transition: { 
+      duration: 0.5,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+      height: { duration: 0.4, delay: 0.1 },
+      marginBottom: { duration: 0.4, delay: 0.1 }
+    }
+  }
+}
+
+// Gentle completion animation without scale
+export const gentleCompletion: Variants = {
+  initial: { opacity: 1 },
+  completing: { 
+    opacity: [1, 0.8, 1],
+    transition: { 
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const 
     }
   }
 }

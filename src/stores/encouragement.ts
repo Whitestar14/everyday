@@ -54,7 +54,7 @@ export const useEncouragementStore = create<EncouragementState>()(
       }
     }),
     {
-      name: 'encouragement-storage'
+      name: 'everyday-encouragement'
     }
   )
 )

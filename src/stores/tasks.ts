@@ -1,75 +1,100 @@
-import { create } from 'zustand'
-
-interface Task {
-  id: string
-  text: string
-  createdAt: Date
-}
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
+import type { Task } from "@/types/app"
+import { validateTaskText, handleStorageError, handleValidationError } from "@/utils/errorHandling"
 
 interface TaskStore {
   tasks: Task[]
   isLoaded: boolean
-  addTask: (text: string) => void
+  error: string | null
+  addTask: (text: string, type: "task" | "routine") => void
+  updateTask: (id: string, updates: Partial<Pick<Task, "text" | "type">>) => void
   removeTask: (id: string) => void
   loadTasks: () => void
+  clearError: () => void
 }
 
-// localStorage helpers
-const STORAGE_KEY = 'everyday-tasks'
+export const useTaskStore = create<TaskStore>()(
+  persist(
+    (set, get) => ({
+      tasks: [],
+      isLoaded: false,
+      error: null,
 
-const saveToStorage = (tasks: Task[]) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
-  } catch (error) {
-    console.warn('Failed to save tasks:', error)
-  }
-}
+      addTask: (text: string, type: "task" | "routine" = "task") => {
+        try {
+          validateTaskText(text)
+          
+          const newTask: Task = {
+            id: crypto.randomUUID(),
+            text: text.trim(),
+            type,
+            createdAt: new Date(),
+          }
 
-const loadFromStorage = (): Task[] => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (!saved) return []
-    
-    const parsed = JSON.parse(saved)
-    // Convert dates back from strings
-    return parsed.map((task: any) => ({
-      ...task,
-      createdAt: new Date(task.createdAt)
-    }))
-  } catch (error) {
-    console.warn('Failed to load tasks:', error)
-    return []
-  }
-}
+          set((state) => ({
+            tasks: [...state.tasks, newTask],
+            error: null
+          }))
+        } catch (error) {
+          const appError = handleValidationError(error, 'addTask')
+          set({ error: appError.message })
+        }
+      },
 
-export const useTaskStore = create<TaskStore>((set, get) => ({
-  tasks: [],
-  isLoaded: false,
-  
-  addTask: (text: string) => {
-    const newTask: Task = {
-      id: crypto.randomUUID(),
-      text: text.trim(),
-      createdAt: new Date()
+      updateTask: (id: string, updates: Partial<Pick<Task, "text" | "type">>) => {
+        try {
+          if (updates.text) {
+            validateTaskText(updates.text)
+          }
+          
+          set((state) => ({
+            tasks: state.tasks.map((task) => (task.id === id ? { ...task, ...updates } : task)),
+            error: null
+          }))
+        } catch (error) {
+          const appError = handleValidationError(error, 'updateTask')
+          set({ error: appError.message })
+        }
+      },
+
+      removeTask: (id: string) => {
+        set((state) => ({
+          tasks: state.tasks.filter((task) => task.id !== id),
+          error: null
+        }))
+      },
+
+      loadTasks: () => {
+        set({ isLoaded: true, error: null })
+      },
+
+      clearError: () => {
+        set({ error: null })
+      },
+    }),
+    {
+      name: "everyday-tasks",
+      partialize: (state) => ({ tasks: state.tasks }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          try {
+            // Convert date strings back to Date objects
+            state.tasks = state.tasks.map((task: any) => ({
+              ...task,
+              createdAt: new Date(task.createdAt),
+              lastCompletedAt: task.lastCompletedAt ? new Date(task.lastCompletedAt) : undefined,
+              type: task.type || "task",
+            }))
+            state.isLoaded = true
+            state.error = null
+          } catch (error) {
+            const appError = handleStorageError(error, 'onRehydrateStorage')
+            state.error = appError.message
+            state.isLoaded = true
+          }
+        }
+      },
     }
-    
-    set((state) => {
-      const newTasks = [...state.tasks, newTask]
-      saveToStorage(newTasks)
-      return { tasks: newTasks }
-    })
-  },
-  
-  removeTask: (id: string) => {
-    set((state) => {
-      const newTasks = state.tasks.filter(task => task.id !== id)
-      saveToStorage(newTasks)
-      return { tasks: newTasks }
-    })
-  },
-  
-  loadTasks: () => {
-    const savedTasks = loadFromStorage()
-    set({ tasks: savedTasks, isLoaded: true })
-  }
-}))
+  )
+)

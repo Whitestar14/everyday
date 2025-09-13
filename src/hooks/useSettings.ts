@@ -1,18 +1,20 @@
-import { useState, useEffect } from 'react'
-import type { ButtonPosition, ThemeMode } from '@/types/app'
+import { useEffect } from 'react'
+import { useSettingsStore } from '@/stores/settings'
 
 export function useSettings() {
-  const [buttonPosition, setButtonPosition] = useState<ButtonPosition>('bottom-right')
-  const [themeMode, setThemeMode] = useState<ThemeMode>('system')
+  const {
+    buttonPosition,
+    themeMode,
+    setButtonPosition,
+    setThemeMode,
+    getButtonPositionStyles,
+    loadSettings
+  } = useSettingsStore()
 
-  // Load settings from localStorage
+  // Load settings on mount
   useEffect(() => {
-    const savedButtonPosition = localStorage.getItem('everyday-button-position') as ButtonPosition
-    const savedTheme = localStorage.getItem('everyday-theme') as ThemeMode
-    
-    if (savedButtonPosition) setButtonPosition(savedButtonPosition)
-    if (savedTheme) setThemeMode(savedTheme)
-  }, [])
+    loadSettings()
+  }, [loadSettings])
 
   // Apply theme
   useEffect(() => {
@@ -33,32 +35,11 @@ export function useSettings() {
     }
   }, [themeMode])
 
-  const handleButtonPositionChange = (position: ButtonPosition) => {
-    setButtonPosition(position)
-    localStorage.setItem('everyday-button-position', position)
-  }
-
-  const handleThemeChange = (theme: ThemeMode) => {
-    setThemeMode(theme)
-    localStorage.setItem('everyday-theme', theme)
-  }
-
-  const getButtonPositionStyles = () => {
-    switch (buttonPosition) {
-      case 'bottom-left':
-        return 'bottom-6 left-6'
-      case 'bottom-center':
-        return 'bottom-6 left-1/2 -translate-x-1/2'
-      default:
-        return 'bottom-6 right-6'
-    }
-  }
-
   return {
     buttonPosition,
     themeMode,
-    handleButtonPositionChange,
-    handleThemeChange,
+    handleButtonPositionChange: setButtonPosition,
+    handleThemeChange: setThemeMode,
     getButtonPositionStyles
   }
 }

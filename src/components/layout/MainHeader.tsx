@@ -1,27 +1,20 @@
 import { motion } from 'framer-motion'
 import { fadeIn } from '@/utils/animations'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
-import type { ButtonPosition, ThemeMode } from '@/types/app'
+import { useSettings } from '@/hooks/useSettings'
 
 interface MainHeaderProps {
   greeting: string
   showSettingsSheet: boolean
   onShowSettingsSheet: (show: boolean) => void
-  buttonPosition: ButtonPosition
-  themeMode: ThemeMode
-  onButtonPositionChange: (position: ButtonPosition) => void
-  onThemeChange: (theme: ThemeMode) => void
 }
 
 export function MainHeader({
   greeting,
   showSettingsSheet,
-  onShowSettingsSheet,
-  buttonPosition,
-  themeMode,
-  onButtonPositionChange,
-  onThemeChange
+  onShowSettingsSheet
 }: MainHeaderProps) {
+  const { buttonPosition, themeMode, handleButtonPositionChange, handleThemeChange } = useSettings()
   return (
     <motion.div 
       className="text-center mb-12 relative"
@@ -35,8 +28,8 @@ export function MainHeader({
         onOpenChange={onShowSettingsSheet}
         buttonPosition={buttonPosition}
         themeMode={themeMode}
-        onButtonPositionChange={onButtonPositionChange}
-        onThemeChange={onThemeChange}
+        onButtonPositionChange={handleButtonPositionChange}
+        onThemeChange={handleThemeChange}
         trigger={
           <button className="absolute top-0 right-0 text-muted-foreground hover:text-foreground transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

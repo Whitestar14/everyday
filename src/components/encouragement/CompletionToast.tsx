@@ -1,4 +1,4 @@
-import { toast } from 'sonner'
+import { toast } from "sonner"
 
 // ADHD-friendly celebration messages - warm, not overwhelming
 const celebrationMessages = [
@@ -13,7 +13,7 @@ const celebrationMessages = [
   "that's beautiful",
   "you should feel proud",
   "that's lovely progress",
-  "gentle steps forward"
+  "gentle steps forward",
 ]
 
 // Get random encouraging message
@@ -24,7 +24,7 @@ const getRandomMessage = () => {
 // Show gentle completion toast
 export const showCompletionToast = (taskText?: string) => {
   const message = getRandomMessage()
-  
+
   toast(message, {
     description: taskText ? `"${taskText}" completed` : undefined,
     duration: 3000,
@@ -32,19 +32,21 @@ export const showCompletionToast = (taskText?: string) => {
   })
 }
 
-// Show daily progress acknowledgment
+// Show daily progress acknowledgment - now only at meaningful milestones
 export const showDailyProgress = (completedCount: number) => {
-  if (completedCount < 2) return // Only show after 2+ completions
-  
+  const milestones = [3, 5, 8, 10, 15, 20, 25, 30]
+
+  if (!milestones.includes(completedCount)) return
+
   const messages = [
     `you've completed ${completedCount} things today`,
     `${completedCount} gentle accomplishments today`,
     `that's ${completedCount} things done today`,
-    `${completedCount} tasks completed with care`
+    `${completedCount} tasks completed with care`,
   ]
-  
+
   const message = messages[Math.floor(Math.random() * messages.length)]
-  
+
   toast(message, {
     description: "that's really something to celebrate",
     duration: 4000,

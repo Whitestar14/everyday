@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Edit3, Trash2, Check, Clock, Repeat } from "lucide-react"
+import { MoreHorizontal, Edit3, Trash2, Check, Repeat } from "lucide-react"
 import { useState } from "react"
 import type { Task } from "@/types/app"
 import { gentleTaskSlide, gentleCompletion } from "@/utils/animations"
@@ -31,12 +31,12 @@ export function TaskItem({
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const handleEdit = () => {
-    setDropdownOpen(false) // Close dropdown before opening edit sheet
+    setDropdownOpen(false)
     onEdit?.(task)
   }
 
   const handleDelete = () => {
-    setDropdownOpen(false) // Close dropdown before deleting
+    setDropdownOpen(false)
     onDelete?.(task.id)
   }
 
@@ -97,13 +97,11 @@ export function TaskItem({
               {task.text}
             </p>
             {/* Consistent type indicators */}
-            <div className="flex items-center gap-1">
-              {task.type === "routine" ? (
+            {task.type === "routine" && (
+              <div className="flex items-center gap-1">
                 <Repeat className="h-3 w-3 text-primary/60" />
-              ) : (
-                <Clock className="h-3 w-3 text-muted-foreground/60" />
-              )}
-            </div>
+              </div>
+            )}
           </div>
           {showDate && <p className="text-xs text-muted-foreground/70 mt-1">{task.createdAt.toLocaleDateString()}</p>}
         </div>
@@ -125,14 +123,13 @@ export function TaskItem({
               align="end" 
               className="w-40"
               onCloseAutoFocus={(e) => {
-                // Prevent focus issues that cause aria-hidden errors
                 e.preventDefault()
               }}
             >
               {onEdit && (
                 <DropdownMenuItem
                   onClick={handleEdit}
-                  className="cursor-pointer hover:bg-accent/10 focus:bg-accent/10"
+                  className="cursor-pointer text-foreground hover:text-background"
                 >
                   <Edit3 className="h-4 w-4 mr-2" />
                   Edit task

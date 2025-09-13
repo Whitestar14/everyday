@@ -5,7 +5,6 @@ import { useTaskStore } from "@/stores/tasks"
 import { useUserStore } from "@/stores/user"
 import { useEncouragementStore } from "@/stores/encouragement"
 import { useMobile } from "@/hooks/useMobile"
-import { useSettings } from "@/hooks/useSettings"
 import { showCompletionToast, showDailyProgress } from "@/components/encouragement/CompletionToast"
 import { Toaster } from "@/components/ui/sonner"
 import { Onboarding } from "@/components/Onboarding"
@@ -23,24 +22,19 @@ function App() {
   const [appState, setAppState] = useState<AppState>("loading")
   const [currentView, setCurrentView] = useState<ViewMode>("main")
 
-  // Custom hooks
   const isMobile = useMobile()
 
-  // Zustand stores
   const { tasks, isLoaded: tasksLoaded, addTask, updateTask, removeTask, loadTasks } = useTaskStore()
   const { preferences, isLoaded: userLoaded, loadPreferences, updateLastVisit } = useUserStore()
   const { recordCompletion, getDailyCompletions } = useEncouragementStore()
 
-  // Get current day name
   const currentDay = new Date().toLocaleDateString("en-US", { weekday: "long" })
 
-  // Load data on mount
   useEffect(() => {
     loadTasks()
     loadPreferences()
   }, [loadTasks, loadPreferences])
 
-  // Handle app state transitions
   useEffect(() => {
     if (tasksLoaded && userLoaded) {
       setAppState("day-display")
@@ -63,10 +57,8 @@ function App() {
     setCompletingTasks((prev) => new Set(prev).add(taskId))
 
     setTimeout(() => {
-      // Record completion for encouragement system
       recordCompletion()
 
-      // Show gentle celebration toast
       showCompletionToast(task?.text)
 
       setTimeout(() => {
@@ -74,7 +66,6 @@ function App() {
         showDailyProgress(dailyCount)
       }, 2500)
 
-      // Remove task
       removeTask(taskId)
       setCompletingTasks((prev) => {
         const newSet = new Set(prev)
@@ -97,7 +88,6 @@ function App() {
     setCurrentView("main")
   }
 
-  // Get time-aware greeting
   const getGreeting = () => {
     const hour = new Date().getHours()
     const name = preferences.name
@@ -110,27 +100,22 @@ function App() {
     return name ? `${timeGreeting}, ${name}` : timeGreeting
   }
 
-  // Show desktop not supported message
   if (!isMobile) {
     return <DesktopNotSupported />
   }
 
-  // Loading state
   if (appState === "loading") {
     return <LoadingState />
   }
 
-  // Day display (shown on every app load)
   if (appState === "day-display") {
     return <DayDisplay day={currentDay} />
   }
 
-  // Onboarding for new users
   if (appState === "onboarding") {
     return <Onboarding onComplete={handleOnboardingComplete} />
   }
 
-  // Main app interface
   return (
     <ModalProvider>
       {currentView === "tasks" ? (
@@ -155,7 +140,6 @@ function App() {
         />
       )}
 
-      {/* Sonner toast notifications */}
       <Toaster
         position="top-center"
         toastOptions={{
@@ -167,7 +151,6 @@ function App() {
         }}
       />
 
-      {/* Add ModalContainer at the root level */}
       <ModalContainer />
     </ModalProvider>
   )

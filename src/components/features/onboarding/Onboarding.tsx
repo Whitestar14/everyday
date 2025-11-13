@@ -6,15 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useUserStore } from '@/stores/user'
 import { Heart, Sparkles } from 'lucide-react'
 
-const energyLevels = [
-  { level: 1, emoji: '🌙', label: 'resting', description: 'gentle tasks only' },
-  { level: 2, emoji: '🌱', label: 'low', description: 'small, easy things' },
-  { level: 3, emoji: '🌿', label: 'okay', description: 'regular tasks' },
-  { level: 4, emoji: '🌞', label: 'good', description: 'ready for more' },
-  { level: 5, emoji: '⚡', label: 'energized', description: 'tackle anything' }
-]
-
-type OnboardingStep = 'welcome' | 'name' | 'energy' | 'complete'
+type OnboardingStep = 'welcome' | 'name' | 'complete'
 
 interface OnboardingProps {
   onComplete: () => void
@@ -23,12 +15,11 @@ interface OnboardingProps {
 export function Onboarding({ onComplete }: OnboardingProps) {
   const [step, setStep] = useState<OnboardingStep>('welcome')
   const [nameInput, setNameInput] = useState('')
-  const [selectedEnergy, setSelectedEnergy] = useState<number | null>(null)
   const [showSubtitle, setShowSubtitle] = useState(false)
   const [showTagline, setShowTagline] = useState(false)
   const [showButton, setShowButton] = useState(false)
-  
-  const { setName, setEnergyLevel, completeOnboarding } = useUserStore()
+
+  const { setName, completeOnboarding } = useUserStore()
 
   // Orchestrate the welcome sequence with gentler timing
   useEffect(() => {
@@ -49,12 +40,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     if (nameInput.trim()) {
       setName(nameInput)
     }
-    setStep('energy')
-  }
-
-  const handleEnergySelect = (level: number) => {
-    setSelectedEnergy(level)
-    setEnergyLevel(level)
+    handleComplete()
   }
 
   const handleComplete = () => {
@@ -65,7 +51,6 @@ export function Onboarding({ onComplete }: OnboardingProps) {
 
   const skipToComplete = () => {
     if (nameInput.trim()) setName(nameInput)
-    if (selectedEnergy) setEnergyLevel(selectedEnergy)
     handleComplete()
   }
 
@@ -260,112 +245,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                   >
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => setStep('energy')}
-                      className="font-normal"
-                    >
-                      skip
-                    </Button>
-                  </motion.div>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {step === 'energy' && (
-          <motion.div
-            key="energy"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.6, ease: gentleEase }}
-            className="w-full max-w-md"
-          >
-            <Card className="shadow-sm border-0 bg-card/50 backdrop-blur-sm">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-light">how are you feeling today?</CardTitle>
-                <CardDescription className="text-sm">
-                  this helps us suggest the right tasks for you
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <motion.div 
-                  className="grid grid-cols-5 gap-2"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.5, ease: gentleEase }}
-                >
-                  {energyLevels.map((energy, index) => (
-                    <motion.button
-                      key={energy.level}
-                      onClick={() => handleEnergySelect(energy.level)}
-                      className={`flex flex-col items-center p-3 rounded-lg transition-all duration-200 ${
-                        selectedEnergy === energy.level
-                          ? 'bg-accent text-accent-foreground shadow-sm scale-105'
-                          : 'bg-muted/30 hover:bg-muted/50 hover:scale-102'
-                      }`}
-                      whileHover={{ scale: selectedEnergy === energy.level ? 1.05 : 1.02 }}
-                      whileTap={{ scale: 0.95 }}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ 
-                        delay: 0.4 + index * 0.08,
-                        duration: 0.4,
-                        ease: gentleEase 
-                      }}
-                    >
-                      <span className="text-2xl mb-1">{energy.emoji}</span>
-                      <span className="text-xs font-medium">{energy.label}</span>
-                    </motion.button>
-                  ))}
-                </motion.div>
-                
-                {/* Reserved space for energy description to prevent layout shift */}
-                <div className="flex items-center justify-center">
-                  <AnimatePresence>
-                    {selectedEnergy && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.5, ease: gentleEase }}
-                        className="text-center p-3 bg-muted/20 rounded-lg w-full"
-                      >
-                        <p className="text-sm text-muted-foreground">
-                          {energyLevels.find(e => e.level === selectedEnergy)?.description}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <motion.div 
-                  className="flex gap-2 pt-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8, duration: 0.5, ease: gentleEase }}
-                >
-                  <motion.div 
-                    className="flex-1"
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <Button 
-                      onClick={handleComplete}
-                      className="w-full font-normal"
-                      disabled={!selectedEnergy}
-                    >
-                      perfect, let's go
-                    </Button>
-                  </motion.div>
-                  <motion.div
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       onClick={skipToComplete}
                       className="font-normal"
                     >
@@ -377,6 +258,8 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             </Card>
           </motion.div>
         )}
+
+
 
         {step === 'complete' && (
           <motion.div

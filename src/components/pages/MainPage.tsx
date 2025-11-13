@@ -3,9 +3,9 @@
 import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { MainHeader } from "@/components/layout/MainHeader"
-import { TaskList } from "@/components/tasks/TaskList"
+import { TaskList } from "@/components/features/tasks/TaskList"
 import { EmptyState } from "@/components/layout/EmptyState"
-import { AddTaskButton } from "@/components/tasks/AddTaskButton"
+import { AddTaskButton } from "@/components/features/tasks/AddTaskButton"
 import { useModal } from "@/contexts/ModalContext"
 import type { Task } from "@/types/app"
 
@@ -16,6 +16,7 @@ interface MainPageProps {
   onAddTask: (text: string, type: "task" | "routine") => void
   onDeleteTask: (id: string) => void
   onViewAllTasks: () => void
+  onManageTasks: () => void
   greeting: string
 }
 
@@ -27,6 +28,7 @@ export function MainPage({
   onCompleteTask,
   onDeleteTask,
   onViewAllTasks,
+  onManageTasks,
   greeting,
 }: MainPageProps) {
   const [showSettingsSheet, setShowSettingsSheet] = useState(false)
@@ -56,6 +58,7 @@ export function MainPage({
               onEditTask={handleEditTask}
               onDeleteTask={onDeleteTask}
               onViewAll={onViewAllTasks}
+              onManage={onManageTasks}
               maxTasks={MAX_TASKS_ON_MAIN}
             />
           )}

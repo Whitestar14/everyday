@@ -1,10 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { validateEnergyLevel, handleStorageError, handleValidationError } from '@/utils/errorHandling'
+import { handleStorageError, handleValidationError } from '@/utils/errorHandling'
 
 interface UserPreferences {
   name: string
-  energyLevel: number
   hasCompletedOnboarding: boolean
   lastVisit: Date | null
 }
@@ -14,7 +13,6 @@ interface UserStore {
   isLoaded: boolean
   error: string | null
   setName: (name: string) => void
-  setEnergyLevel: (level: number) => void
   completeOnboarding: () => void
   updateLastVisit: () => void
   loadPreferences: () => void
@@ -23,14 +21,13 @@ interface UserStore {
 
 const defaultPreferences: UserPreferences = {
   name: '',
-  energyLevel: 3,
   hasCompletedOnboarding: false,
   lastVisit: null
 }
 
 export const useUserStore = create<UserStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       preferences: defaultPreferences,
       isLoaded: false,
       error: null,
@@ -40,27 +37,13 @@ export const useUserStore = create<UserStore>()(
           if (typeof name !== 'string') {
             throw new Error('Name must be a string')
           }
-          
+
           set((state) => ({
             preferences: { ...state.preferences, name: name.trim() },
             error: null
           }))
         } catch (error) {
           const appError = handleValidationError(error, 'setName')
-          set({ error: appError.message })
-        }
-      },
-      
-      setEnergyLevel: (energyLevel: number) => {
-        try {
-          validateEnergyLevel(energyLevel)
-          
-          set((state) => ({
-            preferences: { ...state.preferences, energyLevel },
-            error: null
-          }))
-        } catch (error) {
-          const appError = handleValidationError(error, 'setEnergyLevel')
           set({ error: appError.message })
         }
       },
@@ -96,7 +79,7 @@ export const useUserStore = create<UserStore>()(
             // Convert date strings back to Date objects
             state.preferences = {
               ...state.preferences,
-              lastVisit: state.preferences.lastVisit ? new Date(state.preferences.lastVisit as any) : null
+              lastVisit: state.preferences.lastVisit ? new Date(state.preferences.lastVisit as string | number | Date) : null
             }
             state.isLoaded = true
             state.error = null

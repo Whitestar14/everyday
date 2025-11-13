@@ -1,28 +1,29 @@
-"use client"
-
 import type React from "react"
-import { Trash2 } from "lucide-react"
 import { useState, useEffect } from "react"
+import { Trash2 } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Task } from "@/types/app"
 
-interface EditTaskSheetProps {
-  task: Task | null
+type TaskSheetMode = 'add' | 'edit'
+
+interface TaskSheetProps {
+  mode: TaskSheetMode
+  task?: Task | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  onUpdateTask: (id: string, updates: Partial<Pick<Task, "text" | "type">>) => void
-  onDeleteTask?: (id: string) => void
+  onSubmit: (text: string, type: "task" | "routine") => void
+  onDelete?: (id: string) => void
 }
 
 // Reusable task type toggle component
-function TaskTypeToggle({ 
-  value, 
-  onChange 
-}: { 
+function TaskTypeToggle({
+  value,
+  onChange
+}: {
   value: "task" | "routine"
-  onChange: (type: "task" | "routine") => void 
+  onChange: (type: "task" | "routine") => void
 }) {
   return (
     <div className="flex gap-2 p-1 bg-muted/30 rounded-xl">
@@ -52,49 +53,58 @@ function TaskTypeToggle({
   )
 }
 
-export function EditTaskSheet({ task, open, onOpenChange, onUpdateTask, onDeleteTask }: EditTaskSheetProps) {
+export function TaskSheet({ mode, task, open, onOpenChange, onSubmit, onDelete }: TaskSheetProps) {
   const [inputValue, setInputValue] = useState("")
   const [taskType, setTaskType] = useState<"task" | "routine">("task")
 
-  // Initialize form when task changes
+  // Initialize form when task changes (for edit mode)
   useEffect(() => {
-    if (task) {
+    if (mode === 'edit' && task) {
       setInputValue(task.text)
       setTaskType(task.type)
+    } else if (mode === 'add') {
+      setInputValue("")
+      setTaskType("task")
     }
-  }, [task])
+  }, [task, mode])
 
-  const handleUpdateTask = () => {
-    if (inputValue.trim() && task) {
-      onUpdateTask(task.id, {
-        text: inputValue.trim(),
-        type: taskType,
-      })
+  const handleSubmit = () => {
+    if (inputValue.trim()) {
+      onSubmit(inputValue.trim(), taskType)
+      if (mode === 'add') {
+        setInputValue("")
+        setTaskType("task")
+      }
       onOpenChange(false)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleUpdateTask()
+      handleSubmit()
     } else if (e.key === "Escape") {
-      onOpenChange(false)
+      handleCancel()
     }
   }
 
   const handleCancel = () => {
     onOpenChange(false)
+    if (mode === 'add') {
+      setInputValue("")
+      setTaskType("task")
+    }
   }
 
-  const handleDeleteTask = () => {
-    if (task && onDeleteTask) {
-      onDeleteTask(task.id)
+  const handleDelete = () => {
+    if (task && onDelete) {
+      onDelete(task.id)
       onOpenChange(false)
     }
   }
 
-  // Don't render if no task
-  if (!task) return null
+  const title = mode === 'add' ? 'add something gentle' : 'edit task gently'
+  const description = mode === 'add' ? 'what would you like to remember?' : 'make changes to your task'
+  const submitText = mode === 'add' ? 'add gently' : 'save changes'
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -107,9 +117,9 @@ export function EditTaskSheet({ task, open, onOpenChange, onUpdateTask, onDelete
         </div>
 
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-left text-lg font-normal">edit task gently</SheetTitle>
+          <SheetTitle className="text-left text-lg font-normal">{title}</SheetTitle>
           <SheetDescription className="text-left text-muted-foreground text-sm">
-            make changes to your task
+            {description}
           </SheetDescription>
         </SheetHeader>
 
@@ -129,16 +139,16 @@ export function EditTaskSheet({ task, open, onOpenChange, onUpdateTask, onDelete
             <Button variant="ghost" onClick={handleCancel} className="flex-1 h-11 text-base rounded-xl">
               cancel
             </Button>
-            <Button onClick={handleUpdateTask} disabled={!inputValue.trim()} className="flex-1 h-11 text-base rounded-xl">
-              save changes
+            <Button onClick={handleSubmit} disabled={!inputValue.trim()} className="flex-1 h-11 text-base rounded-xl">
+              {submitText}
             </Button>
           </div>
 
-          {onDeleteTask && (
+          {mode === 'edit' && onDelete && (
             <div className="pt-2">
-              <Button 
-                variant="ghost" 
-                onClick={handleDeleteTask} 
+              <Button
+                variant="ghost"
+                onClick={handleDelete}
                 className="w-full h-11 text-base rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -148,7 +158,9 @@ export function EditTaskSheet({ task, open, onOpenChange, onUpdateTask, onDelete
           )}
 
           <div className="text-center pt-2">
-            <p className="text-xs text-muted-foreground/60">press enter to save, escape to close</p>
+            <p className="text-xs text-muted-foreground/60">
+              press enter to {mode === 'add' ? 'add' : 'save'}, escape to close
+            </p>
           </div>
         </div>
       </SheetContent>

@@ -3,10 +3,10 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft } from "lucide-react"
-import { TaskList } from "@/components/tasks/TaskList"
+import { TaskList } from "@/components/features/tasks/TaskList"
 import { EmptyState } from "@/components/layout/EmptyState"
-import { AddTaskButton } from "@/components/tasks/AddTaskButton"
-import { SettingsPanel } from "@/components/settings/SettingsPanel"
+import { AddTaskButton } from "@/components/features/tasks/AddTaskButton"
+import { SettingsPanel } from "@/components/features/settings/SettingsPanel"
 import { useModal } from "@/contexts/ModalContext"
 import { useSettings } from "@/hooks/useSettings"
 import { fadeIn, gentleFadeIn } from "@/utils/animations"
@@ -62,8 +62,8 @@ export function TasksPage({
             onOpenChange={setShowSettingsSheet}
             buttonPosition={buttonPosition}
             themeMode={themeMode}
-            onButtonPositionChange={onButtonPositionChange}
-            onThemeChange={onThemeChange}
+            onButtonPositionChange={handleButtonPositionChange}
+            onThemeChange={handleThemeChange}
           />
         </motion.div>
 

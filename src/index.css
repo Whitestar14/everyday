@@ -17,17 +17,14 @@
 }
 
 @theme {
-  /* Font Family System - Obtained from the Google Fonts API in production */
   --font-sans: 'Outfit', sans-serif;
   --font-serif: 'Lora', serif;
 
-  /* Radius Scales - Derived from a base `--radius` */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Color System - Mapped to your CSS variables for easy theming */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -47,14 +44,12 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Chart Colors */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* Sidebar Colors (if needed) */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -70,44 +65,43 @@
   --radius: 0.875rem;
 
   /* Warm, cozy backgrounds - no stark whites */
-  --background: oklch(0.98 0.008 45); /* Warm cream #FEFCF8 */
-  --foreground: oklch(0.25 0.015 35); /* Warm charcoal #3A3530 */
+  --background: oklch(0.98 0.008 45);
+  --foreground: oklch(0.25 0.015 35);
 
   /* Soft terracotta primary - welcoming, not aggressive */
-  --primary: oklch(0.65 0.12 25); /* Soft terracotta #E07A5F */
-  --primary-foreground: oklch(0.97 0.008 45); /* Warm cream */
+  --primary: oklch(0.65 0.12 25); 
+  --primary-foreground: oklch(0.97 0.008 45); 
 
   /* Calming sage secondary */
-  --secondary: oklch(0.58 0.05 125); /* Muted sage #81A684 */
-  --secondary-foreground: oklch(0.22 0.02 125); /* Deep forest #2D3A2E */
+  --secondary: oklch(0.58 0.05 125); 
+  --secondary-foreground: oklch(0.22 0.02 125);
 
   /* Gentle card backgrounds */
-  --card: oklch(0.99 0.005 45); /* Slightly warmer than background */
-  --card-foreground: oklch(0.25 0.015 35); /* Same as foreground */
+  --card: oklch(0.99 0.005 45); 
+  --card-foreground: oklch(0.25 0.015 35);
 
   /* Warm muted tones */
-  --muted: oklch(0.94 0.012 40); /* Warm beige #F5F1EB */
-  --muted-foreground: oklch(0.45 0.008 35); /* Medium warm gray #6B6560 */
+  --muted: oklch(0.94 0.012 40);
+  --muted-foreground: oklch(0.45 0.008 35);
 
   /* Encouraging peach accent */
-  --accent: oklch(0.67 0.11 45); /* Soft peach #F4A261 */
-  --accent-foreground: oklch(0.25 0.015 35); /* Warm charcoal */
+  --accent: oklch(0.67 0.11 45); 
+  --accent-foreground: oklch(0.25 0.015 35);
 
   /* Gentle destructive - muted coral, less alarming */
-  --destructive: oklch(0.58 0.10 25); /* Muted coral #D67B5A */
-  --destructive-foreground: oklch(0.97 0.008 45); /* Warm cream */
+  --destructive: oklch(0.58 0.10 25);
+  --destructive-foreground: oklch(0.97 0.008 45);
 
   /* Subtle warm borders */
-  --border: oklch(0.88 0.008 40); /* Light warm gray #E8E3DD */
-  --input: oklch(0.88 0.008 40); /* Same as border */
-  --ring: oklch(0.65 0.12 25); /* Matches primary */
+  --border: oklch(0.88 0.008 40);
+  --input: oklch(0.88 0.008 40);
+  --ring: oklch(0.65 0.12 25);
 
-  /* Warm chart colors for future data visualization */
-  --chart-1: oklch(0.65 0.12 25); /* Terracotta */
-  --chart-2: oklch(0.58 0.05 125); /* Sage */
-  --chart-3: oklch(0.67 0.11 45); /* Peach */
-  --chart-4: oklch(0.72 0.08 65); /* Warm yellow */
-  --chart-5: oklch(0.55 0.08 15); /* Warm brown */
+  --chart-1: oklch(0.65 0.12 25);
+  --chart-2: oklch(0.58 0.05 125);
+  --chart-3: oklch(0.67 0.11 45);
+  --chart-4: oklch(0.72 0.08 65);
+  --chart-5: oklch(0.55 0.08 15);
 
   /* Popover styling */
   --popover: oklch(0.99 0.005 45);
@@ -129,30 +123,29 @@
  * Applied when the `.dark` class is present on an ancestor.
  */
 .dark {
-  /* Dark mode with warm undertones - no harsh blacks */
-  --background: oklch(0.15 0.008 35); /* Warm dark brown */
-  --foreground: oklch(0.95 0.005 45); /* Warm cream */
+  --background: oklch(0.15 0.008 35);
+  --foreground: oklch(0.95 0.005 45);
 
-  --primary: oklch(0.70 0.10 25); /* Lighter terracotta for dark mode */
+  --primary: oklch(0.70 0.10 25);
   --primary-foreground: oklch(0.15 0.008 35);
 
-  --secondary: oklch(0.35 0.03 125); /* Darker sage */
+  --secondary: oklch(0.35 0.03 125);
   --secondary-foreground: oklch(0.95 0.005 45);
 
-  --card: oklch(0.18 0.008 35); /* Slightly lighter than background */
+  --card: oklch(0.18 0.008 35);
   --card-foreground: oklch(0.95 0.005 45);
 
-  --muted: oklch(0.22 0.008 35); /* Warm dark muted */
+  --muted: oklch(0.22 0.008 35);
   --muted-foreground: oklch(0.65 0.005 40);
 
-  --accent: oklch(0.72 0.09 45); /* Brighter peach for dark mode */
+  --accent: oklch(0.72 0.09 45);
   --accent-foreground: oklch(0.15 0.008 35);
 
-  --destructive: oklch(0.62 0.08 25); /* Softer destructive in dark */
+  --destructive: oklch(0.62 0.08 25);
   --destructive-foreground: oklch(0.95 0.005 45);
 
-  --border: oklch(0.25 0.008 35); /* Warm dark border */
-  --input: oklch(0.28 0.008 35); /* Slightly lighter input */
+  --border: oklch(0.25 0.008 35);
+  --input: oklch(0.28 0.008 35);
   --ring: oklch(0.70 0.10 25);
 
   --popover: oklch(0.18 0.008 35);
@@ -186,7 +179,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* Add subtle texture for warmth */
     background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
     background-size: 20px 20px;
     font-family: var(--font-sans);

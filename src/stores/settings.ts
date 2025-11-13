@@ -6,10 +6,12 @@ import { validateButtonPosition, validateThemeMode, handleStorageError, handleVa
 interface SettingsStore {
   buttonPosition: ButtonPosition
   themeMode: ThemeMode
+  newTasksOnTop: boolean
   isLoaded: boolean
   error: string | null
   setButtonPosition: (position: ButtonPosition) => void
   setThemeMode: (theme: ThemeMode) => void
+  setNewTasksOnTop: (value: boolean) => void
   getButtonPositionStyles: () => string
   loadSettings: () => void
   clearError: () => void
@@ -20,6 +22,7 @@ export const useSettingsStore = create<SettingsStore>()(
     (set, get) => ({
       buttonPosition: 'bottom-right',
       themeMode: 'system',
+      newTasksOnTop: true,
       isLoaded: false,
       error: null,
 
@@ -41,6 +44,10 @@ export const useSettingsStore = create<SettingsStore>()(
           const appError = handleValidationError(error, 'setThemeMode')
           set({ error: appError.message })
         }
+      },
+
+      setNewTasksOnTop: (value: boolean) => {
+        set({ newTasksOnTop: value, error: null })
       },
 
       getButtonPositionStyles: () => {
@@ -65,9 +72,10 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: 'everyday-settings',
-      partialize: (state) => ({ 
-        buttonPosition: state.buttonPosition, 
-        themeMode: state.themeMode 
+      partialize: (state) => ({
+        buttonPosition: state.buttonPosition,
+        themeMode: state.themeMode,
+        newTasksOnTop: state.newTasksOnTop
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

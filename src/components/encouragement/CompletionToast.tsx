@@ -28,13 +28,13 @@ export const showCompletionToast = (taskText?: string) => {
   toast(message, {
     description: taskText ? `"${taskText}" completed` : undefined,
     duration: 3000,
-    className: "border-accent/20 bg-accent/10 text-accent-foreground",
+    className: "border-accent/20 bg-accent/10 text-foreground",
   })
 }
 
 // Show daily progress acknowledgment - now only at meaningful milestones
 export const showDailyProgress = (completedCount: number) => {
-  const milestones = [3, 5, 8, 10, 15, 20, 25, 30]
+  const milestones = [15, 30, 40]
 
   if (!milestones.includes(completedCount)) return
 
@@ -50,6 +50,6 @@ export const showDailyProgress = (completedCount: number) => {
   toast(message, {
     description: "that's really something to celebrate",
     duration: 4000,
-    className: "border-primary/20 bg-primary/10 text-primary-foreground",
+    className: "border-primary/20 bg-primary/10 text-foreground",
   })
 }

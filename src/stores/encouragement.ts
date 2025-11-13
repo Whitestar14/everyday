@@ -49,7 +49,6 @@ export const useEncouragementStore = create<EncouragementState>()(
         const today = new Date().toDateString()
         const state = get()
         
-        // Return 0 if it's a new day
         return state.lastCompletionDate === today ? state.dailyCompletions : 0
       }
     }),

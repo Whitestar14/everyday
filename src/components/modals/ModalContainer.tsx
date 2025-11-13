@@ -1,8 +1,8 @@
 "use client"
 
-import { EditTaskSheet } from "@/components/tasks/EditTaskSheet"
-import { AddTaskSheet } from "@/components/tasks/AddTaskSheet"
-import { SettingsPanel } from "@/components/settings/SettingsPanel"
+import { EditTaskSheet } from "@/components/features/tasks/EditTaskSheet"
+import { AddTaskSheet } from "@/components/features/tasks/AddTaskSheet"
+import { SettingsPanel } from "@/components/features/settings/SettingsPanel"
 import { useModal } from "@/contexts/ModalContext"
 import { useSettings } from "@/hooks/useSettings"
 import { useTaskStore } from "@/stores/tasks"

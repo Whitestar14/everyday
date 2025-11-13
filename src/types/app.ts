@@ -1,5 +1,5 @@
-export type AppState = 'loading' | 'day-display' | 'onboarding' | 'main' | 'tasks'
-export type ViewMode = 'main' | 'tasks'
+export type AppState = 'loading' | 'day-display' | 'onboarding' | 'main' | 'tasks' | 'manage'
+export type ViewMode = 'main' | 'tasks' | 'manage'
 export type ButtonPosition = 'bottom-right' | 'bottom-left' | 'bottom-center'
 export type ThemeMode = 'light' | 'dark' | 'system'
 
@@ -9,9 +9,11 @@ export interface Task {
   type: "task" | "routine"
   createdAt: Date
   lastCompletedAt?: Date
+  completedDates?: string[] // Array of dates (YYYY-MM-DD) when routine was completed
 }
 
 export interface AppSettings {
   buttonPosition: ButtonPosition
   themeMode: ThemeMode
+  newTasksOnTop: boolean
 }

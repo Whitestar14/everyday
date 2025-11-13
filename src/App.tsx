@@ -1,118 +1,51 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useTaskStore } from "@/stores/tasks"
-import { useUserStore } from "@/stores/user"
-import { useEncouragementStore } from "@/stores/encouragement"
 import { useMobile } from "@/hooks/useMobile"
-import { showCompletionToast, showDailyProgress } from "@/components/encouragement/CompletionToast"
+import { useAppState } from "@/hooks/useAppState"
+import { useTasks } from "@/hooks/useTasks"
+import { useUser } from "@/hooks/useUser"
 import { Toaster } from "@/components/ui/sonner"
-import { Onboarding } from "@/components/Onboarding"
+import { Onboarding } from "@/components/features/onboarding/Onboarding"
 import { LoadingState } from "@/components/layout/LoadingState"
 import { DayDisplay } from "@/components/layout/DayDisplay"
 import { DesktopNotSupported } from "@/components/layout/DesktopNotSupported"
 import { MainPage } from "@/components/pages/MainPage"
 import { TasksPage } from "@/components/pages/TasksPage"
-import type { AppState, ViewMode } from "@/types/app"
+import { ManageTasksPage } from "@/components/pages/ManageTasksPage"
 import { ModalProvider } from "@/contexts/ModalContext"
 import { ModalContainer } from "@/components/modals/ModalContainer"
 
 function App() {
-  const [completingTasks, setCompletingTasks] = useState<Set<string>>(new Set())
-  const [appState, setAppState] = useState<AppState>("loading")
-  const [currentView, setCurrentView] = useState<ViewMode>("main")
-
   const isMobile = useMobile()
 
-  const { tasks, isLoaded: tasksLoaded, addTask, updateTask, removeTask, loadTasks } = useTaskStore()
-  const { preferences, isLoaded: userLoaded, loadPreferences, updateLastVisit } = useUserStore()
-  const { recordCompletion, getDailyCompletions } = useEncouragementStore()
+  const {
+    currentView,
+    currentDay,
+    isLoading,
+    isDayDisplay,
+    isOnboarding,
+    handleOnboardingComplete,
+    navigateToTasks,
+    navigateToMain,
+    navigateToManage,
+  } = useAppState()
 
-  const currentDay = new Date().toLocaleDateString("en-US", { weekday: "long" })
-
-  useEffect(() => {
-    loadTasks()
-    loadPreferences()
-  }, [loadTasks, loadPreferences])
-
-  useEffect(() => {
-    if (tasksLoaded && userLoaded) {
-      setAppState("day-display")
-
-      const dayTimer = setTimeout(() => {
-        if (!preferences.hasCompletedOnboarding) {
-          setAppState("onboarding")
-        } else {
-          updateLastVisit()
-          setAppState("main")
-        }
-      }, 2000)
-
-      return () => clearTimeout(dayTimer)
-    }
-  }, [tasksLoaded, userLoaded, preferences.hasCompletedOnboarding, updateLastVisit])
-
-  const handleCompleteTask = (taskId: string) => {
-    const task = tasks.find((t) => t.id === taskId)
-    setCompletingTasks((prev) => new Set(prev).add(taskId))
-
-    setTimeout(() => {
-      recordCompletion()
-
-      showCompletionToast(task?.text)
-
-      setTimeout(() => {
-        const dailyCount = getDailyCompletions()
-        showDailyProgress(dailyCount)
-      }, 2500)
-
-      removeTask(taskId)
-      setCompletingTasks((prev) => {
-        const newSet = new Set(prev)
-        newSet.delete(taskId)
-        return newSet
-      })
-    }, 800)
-  }
-
-  const handleOnboardingComplete = () => {
-    setAppState("main")
-    updateLastVisit()
-  }
-
-  const handleViewAllTasks = () => {
-    setCurrentView("tasks")
-  }
-
-  const handleBackToMain = () => {
-    setCurrentView("main")
-  }
-
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    const name = preferences.name
-
-    let timeGreeting = "hello"
-    if (hour < 12) timeGreeting = "good morning"
-    else if (hour < 17) timeGreeting = "good afternoon"
-    else timeGreeting = "good evening"
-
-    return name ? `${timeGreeting}, ${name}` : timeGreeting
-  }
+  const { availableTasks, completingTasks, completeTask, addTask, updateTask, deleteTask } = useTasks()
+  const { greeting } = useUser()
 
   if (!isMobile) {
     return <DesktopNotSupported />
   }
 
-  if (appState === "loading") {
+  if (isLoading) {
     return <LoadingState />
   }
 
-  if (appState === "day-display") {
+  if (isDayDisplay) {
     return <DayDisplay day={currentDay} />
   }
 
-  if (appState === "onboarding") {
+  if (isOnboarding) {
     return <Onboarding onComplete={handleOnboardingComplete} />
   }
 
@@ -120,23 +53,32 @@ function App() {
     <ModalProvider>
       {currentView === "tasks" ? (
         <TasksPage
-          tasks={tasks}
+          tasks={availableTasks}
           completingTasks={completingTasks}
-          onCompleteTask={handleCompleteTask}
+          onCompleteTask={completeTask}
           onAddTask={addTask}
           onUpdateTask={updateTask}
-          onDeleteTask={removeTask}
-          onBack={handleBackToMain}
+          onDeleteTask={deleteTask}
+          onBack={navigateToMain}
+        />
+      ) : currentView === "manage" ? (
+        <ManageTasksPage
+          tasks={availableTasks}
+          completingTasks={completingTasks}
+          onCompleteTask={completeTask}
+          onDeleteTask={deleteTask}
+          onBack={navigateToMain}
         />
       ) : (
         <MainPage
-          tasks={tasks}
+          tasks={availableTasks}
           completingTasks={completingTasks}
-          onCompleteTask={handleCompleteTask}
+          onCompleteTask={completeTask}
           onAddTask={addTask}
-          onDeleteTask={removeTask}
-          onViewAllTasks={handleViewAllTasks}
-          greeting={getGreeting()}
+          onDeleteTask={deleteTask}
+          onViewAllTasks={navigateToTasks}
+          onManageTasks={navigateToManage}
+          greeting={greeting}
         />
       )}
 

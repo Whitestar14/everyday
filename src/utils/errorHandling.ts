@@ -76,7 +76,7 @@ export const safeLocalStorage = {
   getItem: (key: string): string | null => {
     try {
       return localStorage.getItem(key)
-    } catch (error) {
+    } catch {
       throw new StorageError(`Failed to get item from localStorage: ${key}`, 'localStorage.getItem')
     }
   },
@@ -84,7 +84,7 @@ export const safeLocalStorage = {
   setItem: (key: string, value: string): void => {
     try {
       localStorage.setItem(key, value)
-    } catch (error) {
+    } catch {
       throw new StorageError(`Failed to set item in localStorage: ${key}`, 'localStorage.setItem')
     }
   },
@@ -92,7 +92,7 @@ export const safeLocalStorage = {
   removeItem: (key: string): void => {
     try {
       localStorage.removeItem(key)
-    } catch (error) {
+    } catch {
       throw new StorageError(`Failed to remove item from localStorage: ${key}`, 'localStorage.removeItem')
     }
   }

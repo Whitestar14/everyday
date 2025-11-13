@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { fadeIn } from '@/utils/animations'
-import { SettingsPanel } from '@/components/settings/SettingsPanel'
+import { SettingsPanel } from '@/components/features/settings/SettingsPanel'
 import { useSettings } from '@/hooks/useSettings'
 
 interface MainHeaderProps {

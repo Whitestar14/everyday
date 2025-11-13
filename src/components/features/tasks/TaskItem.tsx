@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { MoreHorizontal, Edit3, Trash2, Check, Repeat } from "lucide-react"
 import { useState } from "react"
 import type { Task } from "@/types/app"
@@ -11,11 +12,14 @@ import { gentleTaskSlide, gentleCompletion } from "@/utils/animations"
 interface TaskItemProps {
   task: Task
   isCompleting: boolean
-  onComplete: (taskId: string) => void
+  onComplete?: (taskId: string) => void
   onEdit?: (task: Task) => void
   onDelete?: (taskId: string) => void
   index?: number
   showDate?: boolean
+  selectionMode?: boolean
+  isSelected?: boolean
+  onSelect?: (checked: boolean) => void
 }
 
 
@@ -27,6 +31,9 @@ export function TaskItem({
   onDelete,
   index = 0,
   showDate = true,
+  selectionMode = false,
+  isSelected = false,
+  onSelect,
 }: TaskItemProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -63,28 +70,36 @@ export function TaskItem({
             : "bg-card border-border hover:border-border/60"
         }`}
       >
-        {/* Signature circle checkbox */}
-        <div
-          className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-pointer ${
-            isCompleting
-              ? "bg-accent border-accent text-accent-foreground"
-              : "border-muted-foreground/40 hover:border-muted-foreground/60"
-          }`}
-          onClick={() => !isCompleting && onComplete(task.id)}
-        >
-          <AnimatePresence>
-            {isCompleting && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Check className="h-3 w-3" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Selection mode checkbox or completion circle */}
+        {selectionMode ? (
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={onSelect}
+            className="flex-shrink-0"
+          />
+        ) : (
+          <div
+            className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-pointer ${
+              isCompleting
+                ? "bg-accent border-accent text-accent-foreground"
+                : "border-muted-foreground/40 hover:border-muted-foreground/60"
+            }`}
+            onClick={() => !isCompleting && onComplete?.(task.id)}
+          >
+            <AnimatePresence>
+              {isCompleting && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Check className="h-3 w-3" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Task content */}
         <div className="flex-1 min-w-0">

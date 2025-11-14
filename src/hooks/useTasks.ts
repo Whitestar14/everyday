@@ -1,13 +1,12 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useTaskStore } from '@/stores/tasks'
-import { useEncouragementStore } from '@/stores/encouragement'
 import { useSettingsStore } from '@/stores/settings'
 import { TaskService } from '@/services/TaskService'
-import { EncouragementService } from '@/services/EncouragementService'
 import type { Task } from '@/types/app'
 
 export function useTasks() {
   const [completingTasks, setCompletingTasks] = useState<Set<string>>(new Set())
+  const [undoableTasks, setUndoableTasks] = useState<Map<string, number>>(new Map())
 
   const {
     tasks,
@@ -22,7 +21,7 @@ export function useTasks() {
     clearError
   } = useTaskStore()
 
-  const { recordCompletion, getDailyCompletions } = useEncouragementStore()
+
   const { newTasksOnTop } = useSettingsStore()
 
   const addTask = (text: string, type: 'task' | 'routine' = 'task') => {
@@ -60,20 +59,16 @@ export function useTasks() {
     }
   }
 
-  const completeTask = async (taskId: string) => {
+  const completeTask = useCallback(async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId)
     if (!task) return
 
     // Start completion animation
     setCompletingTasks(prev => new Set(prev).add(taskId))
 
-    // Record completion and handle celebration
-    recordCompletion()
-    const dailyCount = getDailyCompletions()
-    await EncouragementService.handleTaskCompletion(task.text, dailyCount)
-
-    // Handle task completion based on type
-    setTimeout(() => {
+    // Set up undo timeout
+    const undoTimeout = setTimeout(() => {
+      // Actually complete the task
       if (task.type === "routine") {
         // Mark routine as completed for today
         storeCompleteRoutine(taskId)
@@ -87,8 +82,40 @@ export function useTasks() {
         newSet.delete(taskId)
         return newSet
       })
-    }, 800)
-  }
+
+      // Remove from undoable tasks
+      setUndoableTasks(prev => {
+        const newMap = new Map(prev)
+        newMap.delete(taskId)
+        return newMap
+      })
+    }, 3000) // 3 second undo window
+
+    // Add to undoable tasks
+    setUndoableTasks(prev => new Map(prev).set(taskId, undoTimeout))
+  }, [tasks, storeCompleteRoutine, storeRemoveTask])
+
+  const undoTaskCompletion = useCallback((taskId: string) => {
+    const timeout = undoableTasks.get(taskId)
+    if (timeout) {
+      // Clear the completion timeout
+      clearTimeout(timeout)
+
+      // Remove from completing tasks
+      setCompletingTasks(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(taskId)
+        return newSet
+      })
+
+      // Remove from undoable tasks
+      setUndoableTasks(prev => {
+        const newMap = new Map(prev)
+        newMap.delete(taskId)
+        return newMap
+      })
+    }
+  }, [undoableTasks])
 
   const getFilteredTasks = (type?: 'task' | 'routine') => {
     return TaskService.filterTasksByType(tasks, type)
@@ -112,12 +139,14 @@ export function useTasks() {
     tasks,
     availableTasks,
     completingTasks,
+    undoableTasks,
     isLoaded,
     error,
     addTask,
     updateTask,
     deleteTask,
     completeTask,
+    undoTaskCompletion,
     getFilteredTasks,
     getSortedTasks,
     loadTasks,

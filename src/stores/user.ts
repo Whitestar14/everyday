@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware'
 import { handleStorageError, handleValidationError } from '@/utils/errorHandling'
 
 interface UserPreferences {
-  name: string
+  name: string | null
+  avatar: string
   hasCompletedOnboarding: boolean
   lastVisit: Date | null
 }
@@ -12,7 +13,8 @@ interface UserStore {
   preferences: UserPreferences
   isLoaded: boolean
   error: string | null
-  setName: (name: string) => void
+  setName: (name: string | null) => void
+  setAvatar: (avatar: string) => void
   completeOnboarding: () => void
   updateLastVisit: () => void
   loadPreferences: () => void
@@ -20,7 +22,8 @@ interface UserStore {
 }
 
 const defaultPreferences: UserPreferences = {
-  name: '',
+  name: null,
+  avatar: '',
   hasCompletedOnboarding: false,
   lastVisit: null
 }
@@ -32,18 +35,50 @@ export const useUserStore = create<UserStore>()(
       isLoaded: false,
       error: null,
       
-      setName: (name: string) => {
+      setName: (name: string | null) => {
         try {
-          if (typeof name !== 'string') {
-            throw new Error('Name must be a string')
+          if (name !== null) {
+            if (typeof name !== 'string') {
+              throw new Error('Name must be a string')
+            }
+
+            const trimmed = name.trim()
+            if (trimmed.length === 0) {
+              throw new Error('Name cannot be empty')
+            }
+
+            if (trimmed.length > 50) {
+              throw new Error('Name cannot exceed 50 characters')
+            }
+
+            set((state) => ({
+              preferences: { ...state.preferences, name: trimmed },
+              error: null
+            }))
+          } else {
+            set((state) => ({
+              preferences: { ...state.preferences, name: null },
+              error: null
+            }))
+          }
+        } catch (error) {
+          const appError = handleValidationError(error, 'setName')
+          set({ error: appError.message })
+        }
+      },
+
+      setAvatar: (avatar: string) => {
+        try {
+          if (typeof avatar !== 'string' || avatar.length === 0) {
+            throw new Error('Avatar must be a non-empty string')
           }
 
           set((state) => ({
-            preferences: { ...state.preferences, name: name.trim() },
+            preferences: { ...state.preferences, avatar },
             error: null
           }))
         } catch (error) {
-          const appError = handleValidationError(error, 'setName')
+          const appError = handleValidationError(error, 'setAvatar')
           set({ error: appError.message })
         }
       },

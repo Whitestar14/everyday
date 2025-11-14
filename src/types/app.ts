@@ -1,5 +1,5 @@
 export type AppState = 'loading' | 'day-display' | 'onboarding' | 'main' | 'tasks' | 'manage'
-export type ViewMode = 'main' | 'tasks' | 'manage'
+export type ViewMode = 'main' | 'tasks' | 'manage' | 'profile'
 export type ButtonPosition = 'bottom-right' | 'bottom-left' | 'bottom-center'
 export type ThemeMode = 'light' | 'dark' | 'system'
 

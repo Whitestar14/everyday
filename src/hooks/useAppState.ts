@@ -52,6 +52,10 @@ export function useAppState() {
     setCurrentView('manage')
   }
 
+  const navigateToProfile = () => {
+    setCurrentView('profile')
+  }
+
   return {
     appState,
     currentView,
@@ -64,5 +68,6 @@ export function useAppState() {
     navigateToTasks,
     navigateToMain,
     navigateToManage,
+    navigateToProfile,
   }
 }

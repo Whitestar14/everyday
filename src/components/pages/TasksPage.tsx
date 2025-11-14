@@ -15,19 +15,25 @@ import type { Task } from "@/types/app"
 interface TasksPageProps {
   tasks: Task[]
   completingTasks: Set<string>
+  undoableTasks: Map<string, number>
   onCompleteTask: (taskId: string) => void
+  onUndoTask: (taskId: string) => void
   onAddTask: (text: string, type: "task" | "routine") => void
   onUpdateTask: (id: string, updates: Partial<Pick<Task, "text" | "type">>) => void
   onDeleteTask: (id: string) => void
   onBack: () => void
+  onManage?: () => void
 }
 
 export function TasksPage({
   tasks,
   completingTasks,
+  undoableTasks,
   onCompleteTask,
+  onUndoTask,
   onDeleteTask,
   onBack,
+  onManage,
 }: TasksPageProps) {
   const [showSettingsSheet, setShowSettingsSheet] = useState(false)
   const { openEditTask } = useModal()
@@ -74,9 +80,12 @@ export function TasksPage({
               <TaskList
                 tasks={tasks}
                 completingTasks={completingTasks}
+                undoableTasks={undoableTasks}
                 onCompleteTask={onCompleteTask}
+                onUndoTask={onUndoTask}
                 onEditTask={handleEditTask}
                 onDeleteTask={onDeleteTask}
+                onManage={onManage}
                 title="your gentle reminders"
                 showViewAll={false}
               />

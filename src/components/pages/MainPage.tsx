@@ -7,16 +7,20 @@ import { TaskList } from "@/components/features/tasks/TaskList"
 import { EmptyState } from "@/components/layout/EmptyState"
 import { AddTaskButton } from "@/components/features/tasks/AddTaskButton"
 import { useModal } from "@/contexts/ModalContext"
+import { useUser } from "@/hooks/useUser"
 import type { Task } from "@/types/app"
 
 interface MainPageProps {
   tasks: Task[]
   completingTasks: Set<string>
+  undoableTasks: Map<string, number>
   onCompleteTask: (taskId: string) => void
+  onUndoTask: (taskId: string) => void
   onAddTask: (text: string, type: "task" | "routine") => void
   onDeleteTask: (id: string) => void
   onViewAllTasks: () => void
   onManageTasks: () => void
+  onProfileClick?: () => void
   greeting: string
 }
 
@@ -25,14 +29,18 @@ const MAX_TASKS_ON_MAIN = 3
 export function MainPage({
   tasks,
   completingTasks,
+  undoableTasks,
   onCompleteTask,
+  onUndoTask,
   onDeleteTask,
   onViewAllTasks,
   onManageTasks,
+  onProfileClick,
   greeting,
 }: MainPageProps) {
   const [showSettingsSheet, setShowSettingsSheet] = useState(false)
   const { openEditTask } = useModal()
+  const { avatar } = useUser()
 
   const handleEditTask = (task: Task) => {
     openEditTask(task)
@@ -44,8 +52,10 @@ export function MainPage({
         {/* Header Section with Settings */}
         <MainHeader
           greeting={greeting}
+          avatar={avatar}
           showSettingsSheet={showSettingsSheet}
           onShowSettingsSheet={setShowSettingsSheet}
+          onProfileClick={onProfileClick}
         />
 
         {/* Recent Tasks Preview */}
@@ -54,7 +64,9 @@ export function MainPage({
             <TaskList
               tasks={tasks}
               completingTasks={completingTasks}
+              undoableTasks={undoableTasks}
               onCompleteTask={onCompleteTask}
+              onUndoTask={onUndoTask}
               onEditTask={handleEditTask}
               onDeleteTask={onDeleteTask}
               onViewAll={onViewAllTasks}

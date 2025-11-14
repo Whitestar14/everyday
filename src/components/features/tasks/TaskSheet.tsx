@@ -131,31 +131,33 @@ export function TaskSheet({ mode, task, open, onOpenChange, onSubmit, onDelete }
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full px-4 py-3 text-base bg-white/50 backdrop-blur-sm border-2 border-primary/20 focus:border-primary/40 rounded-xl transition-all duration-300"
+            className="w-full px-4 py-3 text-base bg-white/50 backdrop-blur-sm rounded-xl transition-all duration-300"
             autoFocus
           />
 
           <div className="flex gap-3 pt-2">
+            
+            
+          {mode === 'edit' && onDelete && (
+            <div className="flex-0">
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                className="!bg-destructive/10 text-destructive h-11 rounded-md"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
             <Button variant="ghost" onClick={handleCancel} className="flex-1 h-11 text-base rounded-xl">
               cancel
             </Button>
             <Button onClick={handleSubmit} disabled={!inputValue.trim()} className="flex-1 h-11 text-base rounded-xl">
               {submitText}
             </Button>
-          </div>
 
-          {mode === 'edit' && onDelete && (
-            <div className="pt-2">
-              <Button
-                variant="ghost"
-                onClick={handleDelete}
-                className="w-full h-11 text-base rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                delete task
-              </Button>
-            </div>
-          )}
+          </div>
 
           <div className="text-center pt-2">
             <p className="text-xs text-muted-foreground/60">

@@ -14,7 +14,7 @@ export class UserService {
     }
   }
 
-  static generateGreeting(name?: string): string {
+  static generateGreeting(name?: string | null): string {
     const hour = new Date().getHours()
 
     let timeGreeting = 'hello'

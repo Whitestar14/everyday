@@ -8,6 +8,7 @@ export function useUser() {
     isLoaded,
     error,
     setName: storeSetName,
+    setAvatar: storeSetAvatar,
     completeOnboarding,
     updateLastVisit,
     loadPreferences,
@@ -29,17 +30,29 @@ export function useUser() {
     return UserService.generateGreeting(preferences.name)
   }, [preferences.name])
 
+  const setAvatar = (avatar: string) => {
+    try {
+      storeSetAvatar(avatar)
+      return true
+    } catch (error) {
+      console.error('Failed to set avatar:', error)
+      return false
+    }
+  }
+
   const shouldShowOnboarding = useMemo(() => {
     return UserService.shouldShowOnboarding(preferences.hasCompletedOnboarding)
   }, [preferences.hasCompletedOnboarding])
 
   return {
     preferences,
+    avatar: preferences.avatar,
     isLoaded,
     error,
     greeting,
     shouldShowOnboarding,
     setName,
+    setAvatar,
     completeOnboarding,
     updateLastVisit,
     loadPreferences,

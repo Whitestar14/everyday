@@ -12,16 +12,12 @@ import type { Task } from "@/types/app"
 
 interface ManageTasksPageProps {
   tasks: Task[]
-  completingTasks: Set<string>
-  onCompleteTask: (taskId: string) => void
   onDeleteTask: (id: string) => void
   onBack: () => void
 }
 
 export function ManageTasksPage({
   tasks,
-  completingTasks,
-  onCompleteTask,
   onDeleteTask,
   onBack,
 }: ManageTasksPageProps) {
@@ -70,8 +66,8 @@ export function ManageTasksPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-4 py-8">
+    <div className="h-screen bg-background overflow-hidden">
+      <div className="max-w-md mx-auto px-4 py-8 h-full flex flex-col">
         {/* Header */}
         <motion.div
           className="flex items-center justify-between mb-8"
@@ -112,13 +108,13 @@ export function ManageTasksPage({
             <span className="text-sm text-muted-foreground">New tasks appear at top</span>
             <button
               onClick={toggleTaskOrdering}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              className={`relative inline-flex h-6 w-8 p-0 items-center rounded-full transition-colors ${
                 newTasksOnTop ? 'bg-primary' : 'bg-muted'
               }`}
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  newTasksOnTop ? 'translate-x-6' : 'translate-x-1'
+                  newTasksOnTop ? 'translate-x-3' : 'translate-x-1'
                 }`}
               />
             </button>
@@ -137,6 +133,7 @@ export function ManageTasksPage({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Checkbox
+                    className='size-5'
                     checked={selectedTasks.size === tasks.length && tasks.length > 0}
                     onCheckedChange={handleSelectAll}
                   />
@@ -152,7 +149,7 @@ export function ManageTasksPage({
                   size="sm"
                   className="h-8"
                 >
-                  <Trash2 className="w-3 h-3 mr-1" />
+                  <Trash2 className="w-3 h-3" />
                   Delete
                 </Button>
               </div>
@@ -161,32 +158,33 @@ export function ManageTasksPage({
         </AnimatePresence>
 
         {/* Content Area */}
-        <AnimatePresence mode="wait">
-          {tasks.length > 0 ? (
-            <motion.div key="tasks-content" initial="hidden" animate="visible" exit="exit" variants={gentleFadeIn}>
-              <TaskList
-                tasks={tasks}
-                completingTasks={completingTasks}
-                onCompleteTask={onCompleteTask}
-                onEditTask={handleEditTask}
-                onDeleteTask={onDeleteTask}
-                title="all your tasks & routines"
-                showViewAll={false}
-                selectionMode={isSelectionMode}
-                selectedTasks={selectedTasks}
-                onSelectTask={handleSelectTask}
-              />
-            </motion.div>
-          ) : (
-            <motion.div key="empty-content" initial="hidden" animate="visible" exit="exit" variants={gentleFadeIn}>
-              <EmptyState
-                title="no tasks yet"
-                subtitle="create your first task to get started"
-                description="tap the + button below to add something gentle"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="flex-1 overflow-y-auto">
+          <AnimatePresence mode="wait">
+            {tasks.length > 0 ? (
+              <motion.div key="tasks-content" initial="hidden" animate="visible" exit="exit" variants={gentleFadeIn}>
+                <TaskList
+                  tasks={tasks}
+                  onEditTask={handleEditTask}
+                  onDeleteTask={onDeleteTask}
+                  title="all your tasks & routines"
+                  showViewAll={false}
+                  selectionMode={isSelectionMode}
+                  selectedTasks={selectedTasks}
+                  onSelectTask={handleSelectTask}
+                  allowCompletion={false}
+                />
+              </motion.div>
+            ) : (
+              <motion.div key="empty-content" initial="hidden" animate="visible" exit="exit" variants={gentleFadeIn}>
+                <EmptyState
+                  title="no tasks yet"
+                  subtitle="create your first task to get started"
+                  description="tap the + button below to add something gentle"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   )

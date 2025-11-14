@@ -12,7 +12,10 @@ import { gentleTaskSlide, gentleCompletion } from "@/utils/animations"
 interface TaskItemProps {
   task: Task
   isCompleting: boolean
+  isUndoable?: boolean
+  allowCompletion?: boolean
   onComplete?: (taskId: string) => void
+  onUndo?: (taskId: string) => void
   onEdit?: (task: Task) => void
   onDelete?: (taskId: string) => void
   index?: number
@@ -26,7 +29,10 @@ interface TaskItemProps {
 export function TaskItem({
   task,
   isCompleting,
+  isUndoable = false,
+  allowCompletion = true,
   onComplete,
+  onUndo,
   onEdit,
   onDelete,
   index = 0,
@@ -64,7 +70,7 @@ export function TaskItem({
         variants={gentleCompletion}
         initial="initial"
         animate={isCompleting ? "completing" : "initial"}
-        className={`flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${
+        className={`flex items-center gap-4 p-4 py-2 rounded-2xl border transition-all duration-300 ${
           isCompleting
             ? "bg-accent/10 border-accent/40"
             : "bg-card border-border hover:border-border/60"
@@ -75,30 +81,44 @@ export function TaskItem({
           <Checkbox
             checked={isSelected}
             onCheckedChange={onSelect}
-            className="flex-shrink-0"
+            className="flex-shrink-0 size-5"
           />
         ) : (
-          <div
-            className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-pointer ${
-              isCompleting
+          <div className="flex-shrink-0 relative">
+            {allowCompletion && isUndoable ? (
+              <motion.button
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-medium hover:bg-accent/80 transition-colors"
+          onClick={() => onUndo?.(task.id)}
+            >
+              undo
+              </motion.button>
+            ) : allowCompletion ? (
+              <div
+                className={`size-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-pointer ${
+                  isCompleting
                 ? "bg-accent border-accent text-accent-foreground"
-                : "border-muted-foreground/40 hover:border-muted-foreground/60"
-            }`}
-            onClick={() => !isCompleting && onComplete?.(task.id)}
-          >
-            <AnimatePresence>
-              {isCompleting && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Check className="h-3 w-3" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  : "border-muted-foreground/40 hover:border-muted-foreground/60"
+                }`}
+              onClick={() => !isCompleting && onComplete?.(task.id)}
+            >
+          <AnimatePresence>
+        {isCompleting && (
+        <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        >
+        <Check className="h-6 w-6" />
+        </motion.div>
+        )}
+        </AnimatePresence>
+        </div>
+        ) : null}
+        </div>
         )}
 
         {/* Task content */}
@@ -114,7 +134,7 @@ export function TaskItem({
             {/* Consistent type indicators */}
             {task.type === "routine" && (
               <div className="flex items-center gap-1">
-                <Repeat className="h-3 w-3 text-primary/60" />
+                <Repeat className="size-3 text-primary/60" />
               </div>
             )}
           </div>
@@ -128,10 +148,10 @@ export function TaskItem({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 flex-shrink-0"
+                className="size-8 p-0 flex-shrink-0"
                 aria-label="Task options"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
@@ -144,18 +164,19 @@ export function TaskItem({
               {onEdit && (
                 <DropdownMenuItem
                   onClick={handleEdit}
-                  className="cursor-pointer text-foreground hover:text-background"
+                  variant='default'
+                  className="text-foreground focus:bg-accent/30 !hover:text-background"
                 >
-                  <Edit3 className="h-4 w-4 mr-2" />
+                  <Edit3 className="text-foreground hover:text-background size-4 mr-2" />
                   Edit task
                 </DropdownMenuItem>
               )}
               {onDelete && (
                 <DropdownMenuItem
                   onClick={handleDelete}
-                  className="cursor-pointer text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10"
+                  variant='destructive'
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="text-destructive focus:text-destructive size-4 mr-2" />
                   Delete task
                 </DropdownMenuItem>
               )}

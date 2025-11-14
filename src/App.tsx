@@ -4,6 +4,7 @@ import { useMobile } from "@/hooks/useMobile"
 import { useAppState } from "@/hooks/useAppState"
 import { useTasks } from "@/hooks/useTasks"
 import { useUser } from "@/hooks/useUser"
+import { useSettings } from "@/hooks/useSettings"
 import { Toaster } from "@/components/ui/sonner"
 import { Onboarding } from "@/components/features/onboarding/Onboarding"
 import { LoadingState } from "@/components/layout/LoadingState"
@@ -12,11 +13,14 @@ import { DesktopNotSupported } from "@/components/layout/DesktopNotSupported"
 import { MainPage } from "@/components/pages/MainPage"
 import { TasksPage } from "@/components/pages/TasksPage"
 import { ManageTasksPage } from "@/components/pages/ManageTasksPage"
+import { ProfilePage } from "@/components/pages/ProfilePage"
 import { ModalProvider } from "@/contexts/ModalContext"
 import { ModalContainer } from "@/components/modals/ModalContainer"
 
 function App() {
   const isMobile = useMobile()
+  // Ensure theme is applied early
+  useSettings()
 
   const {
     currentView,
@@ -28,9 +32,10 @@ function App() {
     navigateToTasks,
     navigateToMain,
     navigateToManage,
+    navigateToProfile,
   } = useAppState()
 
-  const { availableTasks, completingTasks, completeTask, addTask, updateTask, deleteTask } = useTasks()
+  const { tasks, availableTasks, completingTasks, undoableTasks, completeTask, undoTaskCompletion, addTask, updateTask, deleteTask } = useTasks()
   const { greeting } = useUser()
 
   if (!isMobile) {
@@ -55,29 +60,35 @@ function App() {
         <TasksPage
           tasks={availableTasks}
           completingTasks={completingTasks}
+          undoableTasks={undoableTasks}
           onCompleteTask={completeTask}
+          onUndoTask={undoTaskCompletion}
           onAddTask={addTask}
           onUpdateTask={updateTask}
           onDeleteTask={deleteTask}
           onBack={navigateToMain}
+          onManage={navigateToManage}
         />
       ) : currentView === "manage" ? (
-        <ManageTasksPage
-          tasks={availableTasks}
-          completingTasks={completingTasks}
-          onCompleteTask={completeTask}
-          onDeleteTask={deleteTask}
-          onBack={navigateToMain}
-        />
+      <ManageTasksPage
+      tasks={tasks}
+      onDeleteTask={deleteTask}
+      onBack={navigateToMain}
+      />
+      ) : currentView === "profile" ? (
+        <ProfilePage onBack={navigateToMain} />
       ) : (
         <MainPage
           tasks={availableTasks}
           completingTasks={completingTasks}
+          undoableTasks={undoableTasks}
           onCompleteTask={completeTask}
+          onUndoTask={undoTaskCompletion}
           onAddTask={addTask}
           onDeleteTask={deleteTask}
           onViewAllTasks={navigateToTasks}
           onManageTasks={navigateToManage}
+          onProfileClick={navigateToProfile}
           greeting={greeting}
         />
       )}

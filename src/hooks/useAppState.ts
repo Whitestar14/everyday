@@ -5,7 +5,7 @@ import { useTaskStore } from '@/stores/tasks'
 import { UserService } from '@/services/UserService'
 
 export function useAppState() {
-  const { appState, currentView, setAppState, setCurrentView } = useAppStore()
+  const { appState, setAppState } = useAppStore()
   const { preferences, isLoaded: userLoaded, loadPreferences, updateLastVisit } = useUserStore()
   const { isLoaded: tasksLoaded, loadTasks } = useTaskStore()
 
@@ -40,34 +40,13 @@ export function useAppState() {
     updateLastVisit()
   }
 
-  const navigateToTasks = () => {
-    setCurrentView('tasks')
-  }
-
-  const navigateToMain = () => {
-    setCurrentView('main')
-  }
-
-  const navigateToManage = () => {
-    setCurrentView('manage')
-  }
-
-  const navigateToProfile = () => {
-    setCurrentView('profile')
-  }
-
   return {
     appState,
-    currentView,
     currentDay,
     isLoading: appState === 'loading',
     isDayDisplay: appState === 'day-display',
     isOnboarding: appState === 'onboarding',
     isMain: appState === 'main',
     handleOnboardingComplete,
-    navigateToTasks,
-    navigateToMain,
-    navigateToManage,
-    navigateToProfile,
   }
 }

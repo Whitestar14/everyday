@@ -10,7 +10,7 @@ interface AppStore {
 
 export const useAppStore = create<AppStore>((set) => ({
   appState: 'loading',
-  currentView: 'main',
+  currentView: 'inbox',
   setAppState: (state: AppState) => set({ appState: state }),
   setCurrentView: (view: ViewMode) => set({ currentView: view }),
 }))

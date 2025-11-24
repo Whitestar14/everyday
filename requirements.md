@@ -154,15 +154,30 @@ Sarah, 28, ADHD + Anxiety
   - Time-of-day appropriate recommendations
   - Gentle, never pushy or overwhelming
 
-### Phase 6: Gentle Routines 📋 FUTURE
-**Goal**: Daily routine tracking without streak pressure
+### Phase 6: GTD-Inspired Architecture ✅ COMPLETE
+**Goal**: Transform into full GTD-style system with capture → clarify → execute
 
 #### Features
-- [ ] Morning/evening routine templates
-- [ ] Gentle routine reminders (not alarms)
-- [ ] Progress visualization (encouraging, not judgmental)
-- [ ] Flexible scheduling (skip days without guilt)
-- [ ] Routine customization based on energy level
+- [x] Inbox view for raw capture
+- [x] Today view for tactical execution
+- [x] Library view for long-term organization
+- [x] Routing with wouter
+- [x] Natural language date parsing with chrono-node
+- [x] Recurrence support with rrule
+- [x] Notification system with Capacitor
+- [x] Spaces and projects organization
+- [x] Task metadata (due dates, notes, recurrence)
+
+### Phase 7: Advanced Features 📋 FUTURE
+**Goal**: Enhanced functionality for power users
+
+#### Features
+- [ ] Advanced recurrence patterns (every 2nd Tuesday, etc.)
+- [ ] Task dependencies and subtasks
+- [ ] Time tracking and analytics
+- [ ] Import/export functionality
+- [ ] Collaboration features
+- [ ] Advanced notification settings
 
 ## Current Status Summary
 
@@ -177,6 +192,11 @@ Sarah, 28, ADHD + Anxiety
 - **Clean architecture** - Modular components, custom hooks, type safety
 - **Mobile-first approach** - Desktop limitation with gentle explanation
 - **Maintainable codebase** - Easy to extend and modify
+- **GTD-inspired architecture** - Inbox/Today/Library views provide clear mental model
+- **Natural language parsing** - Reduces friction for date input
+- **Recurrence support** - Enables habit building without complexity
+- **Gentle notifications** - Capacitor integration for respectful reminders
+- **Organization system** - Spaces and projects for long-term structure
 
 ### 🔄 Currently Building
 - **Encouragement system** - Completion celebrations and progress acknowledgment
@@ -211,6 +231,11 @@ Sarah, 28, ADHD + Anxiety
 - ✅ Mobile-first design respects ADHD focus needs
 - ✅ Codebase is maintainable and scalable
 - ✅ Components are reusable and testable
+- ✅ Inbox/Today/Library views provide clear mental model
+- ✅ Natural language parsing reduces input friction
+- ✅ Recurrence support enables gentle habit building
+- ✅ Notifications are gentle reminders, not guilt-inducing alerts
+- ✅ Spaces and projects allow flexible organization without overwhelm
 
 ## Design Identity - Signature Circles
 
@@ -283,6 +308,10 @@ Sarah, 28, ADHD + Anxiety
 - Framer Motion (gentle animations) ✅
 - Zustand (state management) ✅
 - localStorage (data persistence + settings) ✅
+- wouter (lightweight routing) ✅
+- chrono-node (natural language parsing) ✅
+- rrule (recurrence patterns) ✅
+- Capacitor Local Notifications (gentle reminders) ✅
 
 ## Design Principles
 - **Warm colors**: Terracotta, sage, peach - no harsh whites/blacks ✅

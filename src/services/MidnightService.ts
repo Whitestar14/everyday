@@ -41,13 +41,12 @@ export function recalculateTodayTasks(tasks: Task[]): Task[] {
 
   return tasks
     .filter(task => {
-      // Include pinned tasks
-      if (task.isPinned) return true;
+      // (isPinned deprecated) Include tasks due today
 
       // Include tasks due today
       if (task.dueDate && task.dueDate >= today && task.dueDate < tomorrow) return true;
 
-      // Include tasks that started today or earlier
+  // Include tasks that started today or earlier
       if (task.startDate && task.startDate <= today) return true;
 
       // Include recurring tasks scheduled for today

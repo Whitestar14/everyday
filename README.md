@@ -13,7 +13,7 @@ Traditional todo apps can feel overwhelming and judgmental. **everyday** takes a
 
 ## Features
 
-- ✅ Inbox, Today, Library views for GTD-style organization
+- ✅ Inbox, Today, Manage views for GTD-style organization
 - ✅ Natural language date parsing with chrono-node
 - ✅ Recurrence support with rrule
 - ✅ Notification system with Capacitor
@@ -46,7 +46,9 @@ The app uses **wouter** for lightweight, hash-based routing between the three ma
 
 - `/inbox` - Raw capture zone
 - `/today` - Tactical execution view
-- `/library` - Long-term organization
+ - `/inbox` - Raw capture zone
+ - `/today` - Tactical execution view
+ - `/manage` - Long-term organization
 
 ## Design Principles
 

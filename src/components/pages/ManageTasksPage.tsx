@@ -5,22 +5,16 @@ import { TaskList } from "@/components/features/tasks/TaskList"
 import { EmptyState } from "@/components/layout/EmptyState"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from '@/components/ui/switch'
 import { useModal } from "@/contexts/ModalContext"
 import { useSettingsStore } from "@/stores/settings"
+import { useTaskStore } from "@/stores/tasks"
+import { useLocation } from "wouter"
 import { fadeIn, gentleFadeIn } from "@/utils/animations"
 import type { Task } from "@/types/app"
-
-interface ManageTasksPageProps {
-  tasks: Task[]
-  onDeleteTask: (id: string) => void
-  onBack: () => void
-}
-
-export function ManageTasksPage({
-  tasks,
-  onDeleteTask,
-  onBack,
-}: ManageTasksPageProps) {
+export function ManageTasksPage() {
+  const [, navigate] = useLocation()
+  const { tasks, removeTask } = useTaskStore()
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set())
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const { openEditTask } = useModal()
@@ -51,7 +45,7 @@ export function ManageTasksPage({
   }
 
   const handleBulkDelete = () => {
-    selectedTasks.forEach(taskId => onDeleteTask(taskId))
+    selectedTasks.forEach(taskId => removeTask(taskId))
     setSelectedTasks(new Set())
     setIsSelectionMode(false)
   }
@@ -61,9 +55,7 @@ export function ManageTasksPage({
     setSelectedTasks(new Set())
   }
 
-  const toggleTaskOrdering = () => {
-    setNewTasksOnTop(!newTasksOnTop)
-  }
+
 
   return (
     <div className="h-screen bg-background overflow-hidden">
@@ -76,7 +68,7 @@ export function ManageTasksPage({
           variants={fadeIn}
         >
           <button
-            onClick={onBack}
+            onClick={() => navigate('/inbox')}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -104,20 +96,9 @@ export function ManageTasksPage({
           animate="visible"
           variants={fadeIn}
         >
-          <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">New tasks appear at top</span>
-            <button
-              onClick={toggleTaskOrdering}
-              className={`relative inline-flex h-6 w-8 p-0 items-center rounded-full transition-colors ${
-                newTasksOnTop ? 'bg-primary' : 'bg-muted'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  newTasksOnTop ? 'translate-x-3' : 'translate-x-1'
-                }`}
-              />
-            </button>
+            <Switch checked={newTasksOnTop} onCheckedChange={(val) => setNewTasksOnTop(val)} />
           </div>
         </motion.div>
 
@@ -165,7 +146,7 @@ export function ManageTasksPage({
                 <TaskList
                   tasks={tasks}
                   onEditTask={handleEditTask}
-                  onDeleteTask={onDeleteTask}
+                  onDeleteTask={removeTask}
                   title="all your tasks & routines"
                   showViewAll={false}
                   selectionMode={isSelectionMode}

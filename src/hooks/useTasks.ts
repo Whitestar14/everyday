@@ -1,22 +1,32 @@
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useTaskStore } from '@/stores/tasks'
 import { useSettingsStore } from '@/stores/settings'
 import { TaskService } from '@/services/TaskService'
 import type { Task } from '@/types/app'
 
 export function useTasks() {
-  const [completingTasks, setCompletingTasks] = useState<Set<string>>(new Set())
-  const [undoableTasks, setUndoableTasks] = useState<Map<string, number>>(new Map())
 
   const {
     tasks,
     isLoaded,
     error,
-    addTask: storeAddTask,
-    updateTask: storeUpdateTask,
-    completeRoutine: storeCompleteRoutine,
+  addTask: storeAddTask,
+  updateTask: storeUpdateTask,
     removeTask: storeRemoveTask,
     getAvailableTasks,
+    getInboxTasks,
+    getTodayTasks,
+    completeTask: storeCompleteTask,
+    undoTask: storeUndoTask,
+    completingTasks: storeCompletingTasks,
+    undoableTasks: storeUndoableTasks,
+    isSelectionMode: storeIsSelectionMode,
+    selectedTasks: storeSelectedTasks,
+    toggleSelectionMode: storeToggleSelectionMode,
+    selectTask: storeSelectTask,
+    selectAllTasks: storeSelectAllTasks,
+    clearSelection: storeClearSelection,
+    bulkDeleteSelectedTasks: storeBulkDeleteSelectedTasks,
     loadTasks,
     clearError
   } = useTaskStore()
@@ -59,63 +69,13 @@ export function useTasks() {
     }
   }
 
-  const completeTask = useCallback(async (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId)
-    if (!task) return
-
-    // Start completion animation
-    setCompletingTasks(prev => new Set(prev).add(taskId))
-
-    // Set up undo timeout
-    const undoTimeout = setTimeout(() => {
-      // Actually complete the task
-      if (task.type === "routine") {
-        // Mark routine as completed for today
-        storeCompleteRoutine(taskId)
-      } else {
-        // Remove regular task
-        storeRemoveTask(taskId)
-      }
-
-      setCompletingTasks(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(taskId)
-        return newSet
-      })
-
-      // Remove from undoable tasks
-      setUndoableTasks(prev => {
-        const newMap = new Map(prev)
-        newMap.delete(taskId)
-        return newMap
-      })
-    }, 3000) // 3 second undo window
-
-    // Add to undoable tasks
-    setUndoableTasks(prev => new Map(prev).set(taskId, undoTimeout))
-  }, [tasks, storeCompleteRoutine, storeRemoveTask])
+  const completeTask = useCallback((taskId: string) => {
+    storeCompleteTask(taskId)
+  }, [storeCompleteTask])
 
   const undoTaskCompletion = useCallback((taskId: string) => {
-    const timeout = undoableTasks.get(taskId)
-    if (timeout) {
-      // Clear the completion timeout
-      clearTimeout(timeout)
-
-      // Remove from completing tasks
-      setCompletingTasks(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(taskId)
-        return newSet
-      })
-
-      // Remove from undoable tasks
-      setUndoableTasks(prev => {
-        const newMap = new Map(prev)
-        newMap.delete(taskId)
-        return newMap
-      })
-    }
-  }, [undoableTasks])
+    storeUndoTask(taskId)
+  }, [storeUndoTask])
 
   const getFilteredTasks = (type?: 'task' | 'routine') => {
     return TaskService.filterTasksByType(tasks, type)
@@ -138,18 +98,28 @@ export function useTasks() {
   return {
     tasks,
     availableTasks,
-    completingTasks,
-    undoableTasks,
+  completingTasks: storeCompletingTasks,
+  undoableTasks: storeUndoableTasks,
     isLoaded,
     error,
     addTask,
     updateTask,
     deleteTask,
-    completeTask,
-    undoTaskCompletion,
+  completeTask,
+  undoTaskCompletion,
+  getInboxTasks,
+  getTodayTasks,
     getFilteredTasks,
     getSortedTasks,
     loadTasks,
     clearError,
+    // selection state & actions
+    isSelectionMode: storeIsSelectionMode,
+    selectedTasks: storeSelectedTasks,
+    toggleSelectionMode: storeToggleSelectionMode,
+    selectTask: storeSelectTask,
+    selectAllTasks: storeSelectAllTasks,
+    clearSelection: storeClearSelection,
+    bulkDeleteSelectedTasks: storeBulkDeleteSelectedTasks,
   }
 }

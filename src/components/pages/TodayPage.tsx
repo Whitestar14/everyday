@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "wouter";
 import { MainHeader } from "@/components/layout/MainHeader";
 import { TaskList } from "@/components/features/tasks/TaskList";
 import { EmptyState } from "@/components/layout/EmptyState";
@@ -11,13 +9,11 @@ import { useUser } from "@/hooks/useUser";
 import { useTaskStore } from "@/stores/tasks";
 import { useMidnightRefresh } from "@/hooks/useMidnightRefresh";
 import type { Task } from "@/types/app";
-import { AddTaskButton } from "../features/tasks/AddTaskButton";
 
 export function TodayPage() {
-  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const { openEditTask } = useModal();
-  const { avatar, greeting } = useUser();
-  const [, navigate] = useLocation();
+  const { greeting } = useUser();
+  // No explicit `navigate` needed; selection toggles replace manage route
 
   const {
     getTodayTasks,
@@ -26,6 +22,10 @@ export function TodayPage() {
     removeTask,
     completingTasks,
     undoableTasks,
+    isSelectionMode,
+    selectedTasks,
+  toggleSelectionMode,
+  selectTask,
   } = useTaskStore();
 
   const todayTasks = getTodayTasks();
@@ -55,10 +55,6 @@ export function TodayPage() {
         {/* Header Section with Settings */}
         <MainHeader
           greeting={greeting}
-          avatar={avatar}
-          showSettingsSheet={showSettingsSheet}
-          onShowSettingsSheet={setShowSettingsSheet}
-          onProfileClick={() => navigate("/profile")}
         />
 
         {/* Today Tasks */}
@@ -72,8 +68,11 @@ export function TodayPage() {
               onUndoTask={handleUndoTask}
               onEditTask={handleEditTask}
               onDeleteTask={handleDeleteTask}
-              onViewAll={() => navigate("/library")}
-              onManage={() => navigate("/library")}
+              onViewAll={() => toggleSelectionMode(true)}
+              onManage={() => toggleSelectionMode(true)}
+              selectionMode={isSelectionMode}
+              selectedTasks={selectedTasks}
+              onSelectTask={(taskId, checked) => selectTask(taskId, checked)}
               maxTasks={5} // Show all today tasks
             />
           )}
@@ -109,8 +108,7 @@ export function TodayPage() {
         </motion.div>
       </div>
 
-      {/* Quick Add Button - navigates to inbox */}
-      <AddTaskButton />
+  {/* Quick Add Button moved to BottomNav */}
     </div>
   );
 }

@@ -23,6 +23,14 @@ interface TaskStore {
   completingTasks: Set<string>;
   undoableTasks: Map<string, number>;
   undoBuffer: Map<string, Task>;
+  // selection state for bulk actions
+  isSelectionMode: boolean;
+  selectedTasks: Set<string>;
+  toggleSelectionMode: (value?: boolean) => void;
+  selectTask: (taskId: string, selected?: boolean) => void;
+  selectAllTasks: () => void;
+  clearSelection: () => void;
+  bulkDeleteSelectedTasks: () => void;
   addTask: (
     text: string,
     type: "task" | "routine",
@@ -33,8 +41,6 @@ interface TaskStore {
     updates: Partial<Pick<Task, "text" | "type">>,
   ) => void;
   updateTaskMetadata: (id: string, metadata: Partial<Task>) => void;
-  pinTask: (id: string) => void;
-  unpinTask: (id: string) => void;
   moveTaskToSpace: (taskId: string, spaceId: string) => void;
   moveTaskToProject: (taskId: string, projectId: string) => void;
   completeTask: (taskId: string) => void;
@@ -44,7 +50,6 @@ interface TaskStore {
   getAvailableTasks: () => Task[];
   getTodayTasks: () => Task[];
   getInboxTasks: () => Task[];
-  getLibraryTasks: (spaceId?: string, projectId?: string) => Task[];
   loadTasks: () => void;
   clearError: () => void;
 }
@@ -58,6 +63,8 @@ export const useTaskStore = create<TaskStore>()(
       completingTasks: new Set<string>(),
       undoableTasks: new Map<string, number>(),
       undoBuffer: new Map<string, Task>(),
+  isSelectionMode: false,
+  selectedTasks: new Set<string>(),
 
       addTask: (
         text: string,
@@ -144,22 +151,6 @@ export const useTaskStore = create<TaskStore>()(
         }
       },
 
-      pinTask: (id: string) => {
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, isPinned: true } : task,
-          ),
-        }));
-      },
-
-      unpinTask: (id: string) => {
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === id ? { ...task, isPinned: false } : task,
-          ),
-        }));
-      },
-
       moveTaskToSpace: (taskId: string, spaceId: string) => {
         set((state) => ({
           tasks: state.tasks.map((task) =>
@@ -190,6 +181,11 @@ export const useTaskStore = create<TaskStore>()(
           completingTasks: new Set(state.completingTasks).add(taskId),
         }));
 
+        const expiry = Date.now() + 5000;
+        set((state) => ({
+          undoableTasks: new Map(state.undoableTasks).set(taskId, expiry),
+        }));
+
         setTimeout(() => {
           set((state) => {
             const newCompleting = new Set(state.completingTasks);
@@ -197,27 +193,65 @@ export const useTaskStore = create<TaskStore>()(
             return { completingTasks: newCompleting };
           });
 
-          if (task.type === "routine") {
-            get().completeRoutine(taskId);
-          } else {
-            set((state) => ({
-              tasks: state.tasks.filter((t) => t.id !== taskId),
-            }));
+          // Check if task was undone; if not, complete/remove it
+          const currentUndoable = get().undoableTasks;
+          if (currentUndoable.has(taskId)) {
+            if (task.type === "routine") {
+              get().completeRoutine(taskId);
+            } else {
+              set((state) => ({
+                tasks: state.tasks.filter((t) => t.id !== taskId),
+              }));
+            }
           }
 
-          const expiry = Date.now() + 5000;
-          set((state) => ({
-            undoableTasks: new Map(state.undoableTasks).set(taskId, expiry),
-          }));
+          set((state) => {
+            const newUndoable = new Map(state.undoableTasks);
+            newUndoable.delete(taskId);
+            return { undoableTasks: newUndoable };
+          });
+        }, 5000);
+      },
 
-          setTimeout(() => {
-            set((state) => {
-              const newUndoable = new Map(state.undoableTasks);
-              newUndoable.delete(taskId);
-              return { undoableTasks: newUndoable };
-            });
-          }, 5000);
-        }, 300);
+      toggleSelectionMode: (value?: boolean) => {
+        set((state) => {
+          const enabled = value !== undefined ? value : !state.isSelectionMode;
+          return {
+            isSelectionMode: enabled,
+            selectedTasks: enabled ? state.selectedTasks : new Set<string>(),
+          };
+        });
+      },
+
+      selectTask: (taskId: string, selected?: boolean) => {
+        set((state) => {
+          const newSelected = new Set(state.selectedTasks);
+          const isSelected = newSelected.has(taskId);
+          const shouldSelect = selected !== undefined ? selected : !isSelected;
+          if (shouldSelect) newSelected.add(taskId); else newSelected.delete(taskId);
+          return {
+            selectedTasks: newSelected,
+            isSelectionMode: newSelected.size > 0 || state.isSelectionMode,
+          };
+        });
+      },
+
+      selectAllTasks: () => {
+        set((state) => ({
+          selectedTasks: new Set(state.tasks.map((t) => t.id)),
+          isSelectionMode: true,
+        }))
+      },
+
+      clearSelection: () => {
+        set(() => ({ selectedTasks: new Set<string>(), isSelectionMode: false }))
+      },
+
+      bulkDeleteSelectedTasks: () => {
+        set((state) => {
+          const remaining = state.tasks.filter(task => !state.selectedTasks.has(task.id));
+          return { tasks: remaining, selectedTasks: new Set<string>(), isSelectionMode: false };
+        });
       },
 
       undoTask: (taskId: string) => {
@@ -225,23 +259,27 @@ export const useTaskStore = create<TaskStore>()(
         if (!originalTask) return;
 
         set((state) => {
-          if (originalTask.type === "task") {
-            return { tasks: [...state.tasks, originalTask] };
-          } else {
-            return {
-              tasks: state.tasks.map((t) =>
-                t.id === taskId ? originalTask : t,
-              ),
-            };
-          }
-        });
+          // Remove any pending completing state for the task
+          const newCompleting = new Set(state.completingTasks);
+          newCompleting.delete(taskId);
 
-        set((state) => {
+          // If the task is already present, don't add (avoid duplicates)
+          const alreadyExists = state.tasks.some((t) => t.id === taskId);
+          const newTasks = alreadyExists
+            ? state.tasks
+            : [...state.tasks, originalTask];
+
           const newUndoable = new Map(state.undoableTasks);
           newUndoable.delete(taskId);
           const newBuffer = new Map(state.undoBuffer);
           newBuffer.delete(taskId);
-          return { undoableTasks: newUndoable, undoBuffer: newBuffer };
+
+          return {
+            tasks: newTasks,
+            completingTasks: newCompleting,
+            undoableTasks: newUndoable,
+            undoBuffer: newBuffer,
+          };
         });
       },
 
@@ -259,7 +297,6 @@ export const useTaskStore = create<TaskStore>()(
             createdAt: new Date(),
             dueDate: nextDate,
             lastCompletedAt: new Date(),
-            isPinned: false,
             notificationIds: [],
           };
           set((state) => ({
@@ -323,7 +360,6 @@ export const useTaskStore = create<TaskStore>()(
         tomorrow.setDate(tomorrow.getDate() + 1);
         return get()
           .tasks.filter((task) => {
-            if (task.isPinned) return true;
             if (
               task.dueDate &&
               task.dueDate >= today &&
@@ -332,11 +368,11 @@ export const useTaskStore = create<TaskStore>()(
               return true;
             if (task.startDate && task.startDate <= today) return true;
             if (task.recurrence && shouldShowToday(task)) return true;
+            // Include undated tasks (no dueDate, startDate, recurrence)
+            if (!task.dueDate && !task.startDate && !task.recurrence) return true;
             return false;
           })
           .sort((a, b) => {
-            if (a.isPinned && !b.isPinned) return -1;
-            if (!a.isPinned && b.isPinned) return 1;
             const aDue = a.dueDate ? a.dueDate.getTime() : Infinity;
             const bDue = b.dueDate ? b.dueDate.getTime() : Infinity;
             if (aDue !== bDue) return aDue - bDue;
@@ -345,16 +381,10 @@ export const useTaskStore = create<TaskStore>()(
       },
 
       getInboxTasks: () => {
-        return get().tasks.filter((task) => !task.spaceId);
+        return get().tasks;
       },
 
-      getLibraryTasks: (spaceId?: string, projectId?: string) => {
-        return get().tasks.filter((task) => {
-          if (spaceId && task.spaceId !== spaceId) return false;
-          if (projectId && task.projectId !== projectId) return false;
-          return true;
-        });
-      },
+      // getLibraryTasks removed — library view deprecated
 
       loadTasks: () => {
         set({ isLoaded: true, error: null });
@@ -394,7 +424,6 @@ export const useTaskStore = create<TaskStore>()(
                 completedDates:
                   task.completedDates ||
                   (task.type === "routine" ? [] : undefined),
-                isPinned: task.isPinned || false,
                 notificationIds: task.notificationIds || [],
               }),
             );

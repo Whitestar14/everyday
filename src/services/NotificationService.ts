@@ -2,7 +2,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { RRule } from 'rrule';
 import type { Task } from '../types/app';
-import { createRRule, getNextOccurrence } from './RecurrenceService';
+import { getNextOccurrence } from './RecurrenceService';
 
 const PERMISSION_KEY = 'notification_permission_granted';
 
@@ -34,18 +34,20 @@ export const requestPermission = async (): Promise<boolean> => {
 
 export const scheduleNotification = async (task: Task): Promise<string[]> => {
   if (!task.dueDate && !task.recurrence) return [];
+  if (task.type !== 'routine') return [];
 
   const now = new Date();
   let scheduleTime: Date | null = null;
 
+  const offsetMinutes = task.reminderOffsetMinutes ?? 60
   if (task.recurrence) {
     const rruleObj = RRule.fromString(task.recurrence.rrule);
     const next = getNextOccurrence(rruleObj, now);
     if (next) {
-      scheduleTime = new Date(next.getTime() - 60 * 60 * 1000); // 1 hour before
+      scheduleTime = new Date(next.getTime() - offsetMinutes * 60 * 1000);
     }
   } else if (task.dueDate) {
-    scheduleTime = new Date(task.dueDate.getTime() - 60 * 60 * 1000);
+    scheduleTime = new Date(task.dueDate.getTime() - offsetMinutes * 60 * 1000);
   }
 
   if (!scheduleTime || scheduleTime <= now) return [];

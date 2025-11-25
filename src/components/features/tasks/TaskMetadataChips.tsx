@@ -1,16 +1,14 @@
 import React, { type JSX } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Repeat, AlertTriangle } from 'lucide-react';
-import type { Task, Space, Project } from '@/types/app';
+import type { Task } from '@/types/app';
 
 interface TaskMetadataChipsProps {
   task: Task;
-  space?: Space;
-  project?: Project;
   onEdit?: () => void;
 }
 
-const TaskMetadataChips: React.FC<TaskMetadataChipsProps> = ({ task, space, project, onEdit }) => {
+const TaskMetadataChips: React.FC<TaskMetadataChipsProps> = ({ task, onEdit }) => {
   const now = new Date();
   const chips: JSX.Element[] = [];
 
@@ -85,24 +83,7 @@ const TaskMetadataChips: React.FC<TaskMetadataChipsProps> = ({ task, space, proj
     });
   }
 
-  // Space/Project badge
-  const badgeSpace = project ? space : space;
-  const badgeName = project ? project.name : space?.name;
-  if (badgeSpace && badgeName) {
-    chips.push(
-      <motion.div
-        key="space-project"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3, ease: 'easeOut', delay: 0.3 }}
-        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-${badgeSpace.color}-100 text-${badgeSpace.color}-800 cursor-pointer`}
-        onClick={onEdit}
-      >
-        <div className={`w-2 h-2 rounded-full bg-${badgeSpace.color}-500 mr-1`} />
-        {badgeName}
-      </motion.div>
-    );
-  }
+  // Space/Project removed — feature deprecated
 
   // Notification indicator
   if (task.notificationIds && task.notificationIds.length > 0) {

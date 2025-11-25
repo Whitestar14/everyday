@@ -1,15 +1,15 @@
 "use client"
+import { useState, useRef } from 'react'
 
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
+import type { PanInfo } from "framer-motion"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { MoreHorizontal, Edit3, Trash2, Check, Repeat } from "lucide-react"
-import { useState } from "react"
-import type { Task, Space, Project } from "@/types/app"
+import { MoreHorizontal, Edit3, Trash2, Repeat } from "lucide-react"
+import type { Task } from "@/types/app"
 import { gentleTaskSlide, gentleCompletion } from "@/utils/animations"
 import TaskMetadataChips from "./TaskMetadataChips"
-import { TaskEditSheet } from "./TaskEditSheet"
 
 interface TaskItemProps {
   task: Task
@@ -25,10 +25,7 @@ interface TaskItemProps {
   selectionMode?: boolean
   isSelected?: boolean
   onSelect?: (checked: boolean) => void
-  view?: 'inbox' | 'today' | 'library'
-  space?: Space
-  project?: Project
-  onMoveToSpace?: (taskId: string, spaceId: string) => void
+  view?: 'inbox' | 'today' | 'manage'
 }
 
 
@@ -47,32 +44,37 @@ export function TaskItem({
   isSelected = false,
   onSelect,
   view = 'inbox',
-  space,
-  project,
-  onMoveToSpace,
+  
 }: TaskItemProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [editSheetOpen, setEditSheetOpen] = useState(false)
-
-  const handleEdit = () => {
-    setDropdownOpen(false)
-    setEditSheetOpen(true)
-  }
+  const pressTimerRef = useRef<number | null>(null)
+  const pressTriggeredRef = useRef(false)
 
   const handleDelete = () => {
     setDropdownOpen(false)
     onDelete?.(task.id)
   }
 
-  const handleSwipeComplete = (info: any) => {
+  const handleSwipeComplete = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (view === 'today' && allowCompletion && info.offset.x < -50) {
       onComplete?.(task.id)
     }
   }
 
-  const handleTapEdit = () => {
-    if (view !== 'library') {
-      setEditSheetOpen(true)
+  const startPressTimer = () => {
+    if (pressTimerRef.current) return
+    pressTriggeredRef.current = false
+    pressTimerRef.current = window.setTimeout(() => {
+      pressTriggeredRef.current = true
+      // activate selection by selecting this item
+      onSelect?.(true)
+    }, 450)
+  }
+
+  const clearPressTimer = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current)
+      pressTimerRef.current = null
     }
   }
 
@@ -131,25 +133,30 @@ export function TaskItem({
                   }`}
                   onClick={() => !isCompleting && onComplete?.(task.id)}
                 >
-                  <AnimatePresence>
-                    {isCompleting && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Check className="h-6 w-6" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
               ) : null}
             </div>
           )}
 
           {/* Task content */}
-          <div className="flex-1 min-w-0" onClick={handleTapEdit}>
+          <div
+            className="flex-1 min-w-0"
+            onPointerDown={() => startPressTimer()}
+            onPointerUp={() => clearPressTimer()}
+            onPointerLeave={() => clearPressTimer()}
+            onClick={() => {
+              if (pressTriggeredRef.current) {
+                // long press triggered selection, consume the click
+                pressTriggeredRef.current = false
+                return
+              }
+              if (selectionMode) {
+                onSelect?.(!isSelected)
+              } else {
+                onEdit?.(task)
+              }
+            }}
+          >
             <div className="flex items-center gap-2">
               <p
                 className={`text-base transition-all duration-300 ${
@@ -165,12 +172,12 @@ export function TaskItem({
                 </div>
               )}
             </div>
-            <TaskMetadataChips task={task} space={space} project={project} onEdit={() => setEditSheetOpen(true)} />
+            <TaskMetadataChips task={task} onEdit={() => onEdit?.(task)} />
             {showDate && <p className="text-xs text-muted-foreground/70 mt-1">{task.createdAt.toLocaleDateString()}</p>}
           </div>
 
           {/* Always visible dropdown button for mobile-first design */}
-          {(onEdit || onDelete || (view === 'inbox' && onMoveToSpace)) && (
+          {(onEdit || onDelete) && (
             <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -191,25 +198,12 @@ export function TaskItem({
               >
                 {onEdit && (
                   <DropdownMenuItem
-                    onClick={handleEdit}
+                    onClick={() => { onEdit?.(task); setDropdownOpen(false); }}
                     variant='default'
                     className="text-foreground focus:bg-accent/30 !hover:text-background"
                   >
                     <Edit3 className="text-foreground hover:text-background size-4 mr-2" />
                     Edit task
-                  </DropdownMenuItem>
-                )}
-                {view === 'inbox' && onMoveToSpace && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setDropdownOpen(false)
-                      // Assume space selection logic here, for simplicity open edit
-                      setEditSheetOpen(true)
-                    }}
-                    variant='default'
-                    className="text-foreground focus:bg-accent/30 !hover:text-background"
-                  >
-                    Move to space
                   </DropdownMenuItem>
                 )}
                 {onDelete && (
@@ -226,7 +220,6 @@ export function TaskItem({
           )}
         </motion.div>
       </motion.div>
-      <TaskEditSheet task={task} open={editSheetOpen} onOpenChange={setEditSheetOpen} />
     </>
   )
 }

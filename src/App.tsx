@@ -13,8 +13,10 @@ import { DayDisplay } from "@/components/layout/DayDisplay";
 import { DesktopNotSupported } from "@/components/layout/DesktopNotSupported";
 import { InboxPage } from "@/components/pages/InboxPage";
 import { TodayPage } from "@/components/pages/TodayPage";
-import { LibraryPage } from "@/components/pages/LibraryPage";
+import { SettingsPage } from "@/components/pages/SettingsPage";
+import { UpdateSystemBars } from '@/components/features/themes/StatusBars';
 import { BottomNav } from "@/components/layout/BottomNav";
+import SelectionBar from '@/components/layout/SelectionBar'
 import { ModalProvider } from "@/contexts/ModalContext";
 import { ModalContainer } from "@/components/modals/ModalContainer";
 import { setupMidnightRunner } from "@/services/MidnightService";
@@ -69,11 +71,12 @@ function App() {
         <Switch>
           <Route path="/inbox" component={InboxPage} />
           <Route path="/today" component={TodayPage} />
-          <Route path="/library" component={LibraryPage} />
-          <Route path="/profile" component={DefaultRoute} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route path="/profile" component={SettingsPage} />
           <Route path="/" component={DefaultRoute} />
         </Switch>
-        <BottomNav />
+  <SelectionBar />
+  <BottomNav />
       </Router>
 
       <Toaster
@@ -88,6 +91,7 @@ function App() {
       />
 
       <ModalContainer />
+      <UpdateSystemBars />
     </ModalProvider>
   );
 }

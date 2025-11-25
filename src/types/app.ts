@@ -1,6 +1,5 @@
 export type AppState = 'loading' | 'day-display' | 'onboarding' | 'main' | 'tasks' | 'manage'
-export type ViewMode = 'inbox' | 'today' | 'library'
-export type ButtonPosition = 'bottom-right' | 'bottom-left' | 'bottom-center'
+export type ViewMode = 'inbox' | 'today' | 'manage'
 export type ThemeMode = 'light' | 'dark' | 'system'
 
 export interface Task {
@@ -13,10 +12,9 @@ export interface Task {
   dueDate?: Date
   startDate?: Date
   recurrence?: RecurrenceRule
-  spaceId?: string
-  projectId?: string
   notes?: string
-  isPinned?: boolean
+  reminderOffsetMinutes?: number
+  reminderEnabled?: boolean
   parsedMetadata?: ParsedMetadata
   notificationIds?: string[]
 }
@@ -32,22 +30,9 @@ export interface ParsedMetadata {
   errors?: string[]
 }
 
-export interface Space {
-  id: string
-  name: string
-  color: string
-  createdAt: Date
-}
-
-export interface Project {
-  id: string
-  name: string
-  spaceId: string
-  createdAt: Date
-}
+// Space and Project types removed — feature deprecated
 
 export interface AppSettings {
-  buttonPosition: ButtonPosition
   themeMode: ThemeMode
   newTasksOnTop: boolean
 }

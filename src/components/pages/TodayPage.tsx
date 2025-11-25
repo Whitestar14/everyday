@@ -69,7 +69,6 @@ export function TodayPage() {
               onEditTask={handleEditTask}
               onDeleteTask={handleDeleteTask}
               onViewAll={() => toggleSelectionMode(true)}
-              onManage={() => toggleSelectionMode(true)}
               selectionMode={isSelectionMode}
               selectedTasks={selectedTasks}
               onSelectTask={(taskId, checked) => selectTask(taskId, checked)}

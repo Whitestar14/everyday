@@ -6,7 +6,8 @@ import type { PanInfo } from "framer-motion"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { MoreHorizontal, Edit3, Trash2, Repeat } from "lucide-react"
+import { MoreHorizontal, Edit3, Trash2, Repeat, Check } from "lucide-react"
+import { useTasks } from '@/hooks/useTasks'
 import type { Task } from "@/types/app"
 import { gentleTaskSlide, gentleCompletion } from "@/utils/animations"
 import TaskMetadataChips from "./TaskMetadataChips"
@@ -46,6 +47,7 @@ export function TaskItem({
   view = 'inbox',
   
 }: TaskItemProps) {
+  const { toggleSelectionMode } = useTasks()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const pressTimerRef = useRef<number | null>(null)
   const pressTriggeredRef = useRef(false)
@@ -196,6 +198,20 @@ export function TaskItem({
                   e.preventDefault()
                 }}
               >
+                {onSelect && (
+                  <DropdownMenuItem
+                    onClick={() => { 
+                      if (!selectionMode) toggleSelectionMode(true)
+                      onSelect?.(!isSelected)
+                      setDropdownOpen(false)
+                    }}
+                    variant='default'
+                    className="text-foreground focus:bg-accent/30 !hover:text-background"
+                  >
+                    <Check className="text-foreground hover:text-background size-4 mr-2" />
+                    {isSelected ? 'Deselect item' : 'Select item'}
+                  </DropdownMenuItem>
+                )}
                 {onEdit && (
                   <DropdownMenuItem
                     onClick={() => { onEdit?.(task); setDropdownOpen(false); }}

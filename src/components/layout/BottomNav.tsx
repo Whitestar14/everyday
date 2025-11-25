@@ -9,6 +9,9 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 export const BottomNav: React.FC = () => {
   const [location] = useLocation();
 
+  // Hide bottom nav when viewing the settings page (the user requested a clean settings layout)
+  if (location === '/settings') return null;
+
   const handleTabClick = async () => {
     if (Capacitor.isNativePlatform()) {
       try {

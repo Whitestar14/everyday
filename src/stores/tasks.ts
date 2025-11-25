@@ -41,8 +41,6 @@ interface TaskStore {
     updates: Partial<Pick<Task, "text" | "type">>,
   ) => void;
   updateTaskMetadata: (id: string, metadata: Partial<Task>) => void;
-  moveTaskToSpace: (taskId: string, spaceId: string) => void;
-  moveTaskToProject: (taskId: string, projectId: string) => void;
   completeTask: (taskId: string) => void;
   undoTask: (taskId: string) => void;
   completeRoutine: (id: string) => void;
@@ -151,23 +149,7 @@ export const useTaskStore = create<TaskStore>()(
         }
       },
 
-      moveTaskToSpace: (taskId: string, spaceId: string) => {
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === taskId
-              ? { ...task, spaceId, projectId: undefined }
-              : task,
-          ),
-        }));
-      },
-
-      moveTaskToProject: (taskId: string, projectId: string) => {
-        set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === taskId ? { ...task, projectId } : task,
-          ),
-        }));
-      },
+      // space/project handling deprecated — removed
 
       completeTask: (taskId: string) => {
         const task = get().tasks.find((t) => t.id === taskId);

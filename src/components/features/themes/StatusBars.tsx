@@ -1,25 +1,17 @@
-import { useEffect } from 'react';
-import { useTheme } from 'next-themes';
-import { registerPlugin } from '@capacitor/core';
-
-const SystemBars = registerPlugin<{
-  setBarsColor(options: {
-    statusColor: string;
-    navColor: string;
-    styles: string;
-  }): Promise<void>;
-}>('SystemBars');
+import { useEffect } from 'react'
+import { useTheme } from 'next-themes'
+import SystemBars from '@/plugins/SystemBars'
 
 export function UpdateSystemBars() {
-  const { theme } = useTheme();
+  const { theme } = useTheme()
 
   useEffect(() => {
-    SystemBars.setBarsColor({
-      statusColor: theme === 'dark' ? '#0e0a09' : '#fdf7f4',
-      navColor: theme === 'dark' ? '#0e0a09' : '#fdf7f4',
-      styles: theme === 'dark' ? 'light' : 'dark'
-    });
-  }, [theme]);
+    const statusColor = theme === 'dark' ? '#0e0a09' : '#fdf7f4'
+    const navColor = theme === 'dark' ? '#0e0a09' : '#fdf7f4'
+    const styles = theme === 'dark' ? 'light' : 'dark'
 
-  return null;
+      SystemBars.setBarsColor({ statusColor, navColor, styles })
+  }, [theme])
+
+  return null
 }

@@ -29,7 +29,7 @@ export function SettingsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-muted-foreground/10 px-6 py-4">
+      <header className="sticky top-0 z-10 bg-background backdrop-blur-sm px-6 py-3">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -161,7 +161,7 @@ export function SettingsPage() {
           transition={{ delay: 0.2 }}
           className="text-center pt-8 border-t border-muted-foreground/10"
         >
-          <p className="text-xs text-muted-foreground/60">v1.0.0 - made with ❤️</p>
+          <p className="text-xs text-muted-foreground/60">v0.4.2 - Stud.io</p>
         </motion.div>
       </div>
     </div>

@@ -40,8 +40,8 @@ export const useTodayTasks = (): Task[] => {
         // Include if start date is today or past
         if (task.startDate && (isDateToday(task.startDate) || isDatePast(task.startDate))) return true
 
-        // Include if recurring and should show today
-        if (task.recurrence && shouldShowToday(task)) return true
+  // Include if recurring and should show today
+  if (task.recurrence && shouldShowToday(task.recurrence.rrule)) return true
 
         return false
       })

@@ -72,7 +72,6 @@ function App() {
           <Route path="/inbox" component={InboxPage} />
           <Route path="/today" component={TodayPage} />
           <Route path="/settings" component={SettingsPage} />
-          <Route path="/profile" component={SettingsPage} />
           <Route path="/" component={DefaultRoute} />
         </Switch>
   <SelectionBar />

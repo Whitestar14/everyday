@@ -1,111 +1,123 @@
-import React, { type JSX } from 'react';
-import { motion } from 'framer-motion';
-import { Bell, Repeat, AlertTriangle } from 'lucide-react';
-import type { Task } from '@/types/app';
+import React from "react"
+import { motion } from "framer-motion"
+import { Bell, Repeat, AlertTriangle, Calendar } from "lucide-react"
+import type { Task } from "@/types/app"
 
 interface TaskMetadataChipsProps {
-  task: Task;
-  onEdit?: () => void;
+  task: Task
+  onEdit?: () => void
 }
 
-const TaskMetadataChips: React.FC<TaskMetadataChipsProps> = ({ task, onEdit }) => {
-  const now = new Date();
-  const chips: JSX.Element[] = [];
+function formatDueChip(dueDate: Date, now: Date) {
+  const isOverdue = dueDate.getTime() < now.getTime()
+  const isToday = dueDate.toDateString() === now.toDateString()
+  const daysDiff = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-  // Due date chip
-  if (task.dueDate) {
-    const dueDate = new Date(task.dueDate);
-    const isOverdue = dueDate < now;
-    const isToday = dueDate.toDateString() === now.toDateString();
-    const daysDiff = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    let text = '';
-    let colorClass = '';
-    if (isOverdue) {
-      text = 'overdue';
-      colorClass = 'bg-red-100 text-red-800';
-    } else if (isToday) {
-      text = 'today';
-      colorClass = 'bg-amber-100 text-amber-800';
-    } else if (daysDiff === 1) {
-      text = 'tomorrow';
-      colorClass = 'bg-gray-100 text-gray-800';
-    } else {
-      text = `in ${daysDiff} days`;
-      colorClass = 'bg-gray-100 text-gray-800';
+  if (isOverdue) {
+    return {
+      label: "Overdue",
+      classes: "bg-destructive/10 text-destructive",
+      icon: <Calendar className="size-3" aria-hidden="true" />
     }
-    chips.push(
-      <motion.div
-        key="due-date"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
-        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClass} cursor-pointer`}
-        onClick={onEdit}
-      >
-        {text}
-      </motion.div>
-    );
   }
-
-  // Recurrence chip
-  if (task.recurrence) {
-    chips.push(
-      <motion.div
-        key="recurrence"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3, ease: 'easeOut', delay: 0.1 }}
-        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-pointer"
-        onClick={onEdit}
-      >
-        <Repeat className="w-3 h-3 mr-1" />
-        {task.recurrence.description}
-      </motion.div>
-    );
+  if (isToday) {
+    return {
+      label: "Today",
+      classes: "bg-warning/10 text-warning",
+      icon: <Calendar className="size-3" aria-hidden="true" />
+    }
   }
-
-  // Error chips
-  if (task.parsedMetadata?.errors) {
-    task.parsedMetadata.errors.forEach((error, index) => {
-      chips.push(
-        <motion.div
-          key={`error-${index}`}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, ease: 'easeOut', delay: 0.2 + index * 0.1 }}
-          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 cursor-pointer"
-          onClick={onEdit}
-        >
-          <AlertTriangle className="w-3 h-3 mr-1" />
-          {error}
-        </motion.div>
-      );
-    });
+  if (daysDiff === 1) {
+    return {
+      label: "Tomorrow",
+      classes: "bg-muted text-muted-foreground",
+      icon: <Calendar className="size-3" aria-hidden="true" />
+    }
   }
-
-  // Space/Project removed — feature deprecated
-
-  // Notification indicator
-  if (task.notificationIds && task.notificationIds.length > 0) {
-    chips.push(
-      <motion.div
-        key="notification"
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3, ease: 'easeOut', delay: 0.4 }}
-        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 cursor-pointer"
-        onClick={onEdit}
-      >
-        <Bell className="w-3 h-3" />
-      </motion.div>
-    );
+  return {
+    label: `In ${daysDiff} days`,
+    classes: "bg-muted text-muted-foreground",
+    icon: <Calendar className="size-3" aria-hidden="true" />
   }
+}
+
+const chipMotion = {
+  initial: { opacity: 0, scale: 0.95 },
+  animate: { opacity: 1, scale: 1 },
+  transition: { duration: 0.2, ease: "easeOut" }
+}
+
+const baseChipClasses =
+  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium select-none"
+
+const TaskMetadataChips: React.FC<TaskMetadataChipsProps> = ({ task, onEdit }) => {
+  const now = new Date()
 
   return (
     <div className="flex flex-wrap gap-1 mt-1">
-      {chips}
-    </div>
-  );
-};
+      {/* Due date chip */}
+      {task.dueDate && (
+        <motion.button
+          type="button"
+          {...chipMotion}
+          className={`${baseChipClasses} ${formatDueChip(new Date(task.dueDate), now).classes}`}
+          onClick={onEdit}
+          aria-label="Edit due date"
+        >
+          {formatDueChip(new Date(task.dueDate), now).icon}
+          {formatDueChip(new Date(task.dueDate), now).label}
+        </motion.button>
+      )}
 
-export default TaskMetadataChips;
+      {/* Recurrence chip */}
+      {task.recurrence && (
+        <motion.button
+          type="button"
+          {...chipMotion}
+          transition={{ ...chipMotion.transition, delay: 0.04 }}
+          className={`${baseChipClasses} bg-primary/10 text-primary`}
+          onClick={onEdit}
+          aria-label="Edit recurrence"
+        >
+          <Repeat className="size-3" aria-hidden="true" />
+          {task.recurrence.description}
+        </motion.button>
+      )}
+
+      {/* Parsing error chips */}
+      {task.parsedMetadata?.errors?.map((error, index) => (
+        <motion.button
+          type="button"
+          key={`error-${index}`}
+          {...chipMotion}
+          transition={{ ...chipMotion.transition, delay: 0.06 + index * 0.04 }}
+          className={`${baseChipClasses} bg-warning/10 text-warning`}
+          onClick={onEdit}
+          aria-label="Edit parsing issue"
+          title={error}
+        >
+          <AlertTriangle className="size-3" aria-hidden="true" />
+          {error}
+        </motion.button>
+      ))}
+
+      {/* Notification chip */}
+      {task.notificationIds && task.notificationIds.length > 0 && (
+        <motion.button
+          type="button"
+          {...chipMotion}
+          transition={{ ...chipMotion.transition, delay: 0.08 }}
+          className={`${baseChipClasses} bg-accent/10 text-accent`}
+          onClick={onEdit}
+          aria-label="Edit reminder"
+          title="Reminder set"
+        >
+          <Bell className="size-3" aria-hidden="true" />
+          Reminder
+        </motion.button>
+      )}
+    </div>
+  )
+}
+
+export default TaskMetadataChips

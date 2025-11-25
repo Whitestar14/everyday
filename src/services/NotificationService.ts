@@ -1,15 +1,15 @@
+// services/NotificationService.ts
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 import { RRule } from 'rrule';
-import type { Task } from '../types/app';
-import { getNextOccurrence } from './RecurrenceService';
+import type { Task } from '@/types/app';
+import { getNextOccurrence } from '@/services/RecurrenceService';
 
 const PERMISSION_KEY = 'notification_permission_granted';
 
 export const requestPermission = async (): Promise<boolean> => {
   if (Capacitor.getPlatform() === 'web') {
-    // Capacitor handles web notifications via browser API if supported
-    // For simplicity, proceed with Capacitor's requestPermissions
+    // Continue with Capacitor's permissions (browser API under the hood)
   }
 
   const { display } = await LocalNotifications.checkPermissions();
@@ -19,7 +19,7 @@ export const requestPermission = async (): Promise<boolean> => {
   }
 
   if (localStorage.getItem(PERMISSION_KEY) === 'denied') {
-    return false; // Don't ask repeatedly
+    return false;
   }
 
   const result = await LocalNotifications.requestPermissions();
@@ -33,16 +33,17 @@ export const requestPermission = async (): Promise<boolean> => {
 };
 
 export const scheduleNotification = async (task: Task): Promise<string[]> => {
+  // Only schedule for routines or tasks with due dates (you can loosen this if desired)
   if (!task.dueDate && !task.recurrence) return [];
-  if (task.type !== 'routine') return [];
-
   const now = new Date();
   let scheduleTime: Date | null = null;
 
-  const offsetMinutes = task.reminderOffsetMinutes ?? 60
+  const offsetMinutes = task.reminderOffsetMinutes ?? 60;
+
   if (task.recurrence) {
     const rruleObj = RRule.fromString(task.recurrence.rrule);
-    const next = getNextOccurrence(rruleObj, now);
+    const anchor = task.startDate ?? task.dueDate ?? now;
+    const next = getNextOccurrence(rruleObj, anchor);
     if (next) {
       scheduleTime = new Date(next.getTime() - offsetMinutes * 60 * 1000);
     }
@@ -52,23 +53,21 @@ export const scheduleNotification = async (task: Task): Promise<string[]> => {
 
   if (!scheduleTime || scheduleTime <= now) return [];
 
-  const id = Date.now(); // Simple unique ID generation
+  const id = Date.now();
   await LocalNotifications.schedule({
     notifications: [{
       id,
       title: 'Gentle Reminder',
       body: `gentle reminder: ${task.text}`,
-      schedule: { at: scheduleTime }
-    }]
+      schedule: { at: scheduleTime },
+    }],
   });
 
   return [id.toString()];
 };
 
 export const cancelNotification = async (notificationId: string): Promise<void> => {
-  await LocalNotifications.cancel({
-    notifications: [{ id: parseInt(notificationId, 10) }]
-  });
+  await LocalNotifications.cancel({ notifications: [{ id: parseInt(notificationId, 10) }] });
 };
 
 export const cancelTaskNotifications = async (task: Task): Promise<void> => {
@@ -78,8 +77,6 @@ export const cancelTaskNotifications = async (task: Task): Promise<void> => {
 };
 
 export const rescheduleRecurringNotifications = async (task: Task): Promise<string[]> => {
-  // Cancel existing notifications
   await cancelTaskNotifications(task);
-  // Schedule new ones for the recurring task
   return await scheduleNotification(task);
 };

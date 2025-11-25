@@ -7,7 +7,7 @@ import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider attribute={"class"}>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>

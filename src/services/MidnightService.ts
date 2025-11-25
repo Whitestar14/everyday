@@ -49,8 +49,8 @@ export function recalculateTodayTasks(tasks: Task[]): Task[] {
   // Include tasks that started today or earlier
       if (task.startDate && task.startDate <= today) return true;
 
-      // Include recurring tasks scheduled for today
-      if (task.recurrence && shouldShowToday(task)) return true;
+  // Include recurring tasks scheduled for today
+  if (task.recurrence && shouldShowToday(task.recurrence.rrule)) return true;
 
       // Exclude completed one-time tasks from previous days (assuming "configured" means always for simplicity)
       if (task.lastCompletedAt && !task.recurrence && task.dueDate && task.dueDate < today) return false;

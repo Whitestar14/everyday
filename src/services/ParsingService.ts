@@ -1,65 +1,305 @@
+// services/ParsingService.ts
 import * as chrono from 'chrono-node';
+
+export type RecurrenceType =
+  | 'none'
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'yearly'
+  | 'weekday'
+  | 'weekend'
+  | 'custom-weekly';
+
+export interface Recurrence {
+  type: RecurrenceType;
+  daysOfWeek?: number[];
+  raw?: string;
+}
 
 export interface ParsedTaskInput {
   cleanText: string;
-  dueDate?: Date;
-  startDate?: Date;
-  recurrence?: string;
+  dueDate?: Date | string;
+  startDate?: Date | string;
+  recurrence?: Recurrence;
   errors?: string[];
+  meta?: {
+    extractedDueFragment?: string;
+    extractedStartFragment?: string;
+    additionalDates?: { text: string; date: Date | string }[];
+  };
 }
 
-export function parseTaskInput(text: string): ParsedTaskInput {
-  let cleanText = text;
-  let dueDate: Date | undefined;
-  let startDate: Date | undefined;
-  let recurrence: string | undefined;
-  let errors: string[] = [];
+export interface ParseOptions {
+  returnISO?: boolean;
+  referenceDate?: Date;
+  strict?: boolean;
+}
 
-  // Detect and parse startDate (e.g., "start on monday", "starting on tomorrow")
-  const startDateMatch = cleanText.match(/(start on|starting on|begin on)\s+(.+)/i);
-  if (startDateMatch) {
-    const startText = startDateMatch[2];
-    const startResults = chrono.parse(startText);
-    if (startResults.length > 0) {
-      startDate = startResults[0].start.date();
-      cleanText = cleanText.replace(startDateMatch[0], '').trim();
+const DEFAULT_OPTIONS: ParseOptions = {
+  returnISO: true,
+  referenceDate: new Date(),
+  strict: false,
+};
+
+const START_PATTERN = /\b(start(?:ing)?|begin)\b(?:\s+(?:on|at))?\s+(.+?)(?=$|[.,;])?/i;
+const DUE_PATTERN = /\b(due|due\s+on|by)\b(?:\s+(?:on|at))?\s+(.+?)(?=$|[.,;])?/i;
+const RECURRENCE_PATTERN =
+  /\b(every\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday|weekday|weekend)(?:s)?|daily|weekly|monthly|yearly)\b/i;
+const DATE_HINTS =
+  /\b(tomorrow|today|yesterday|next|in\s+\d+\s+(?:day|days|hour|hours|week|weeks)|\d{1,2}:\d{2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{1,2}\/\d{1,2}|\d{4}-\d{2}-\d{2})\b/i;
+
+function toOut(value: Date, options: ParseOptions): Date | string {
+  return options.returnISO ? value.toISOString() : value;
+}
+
+function parseFirstDate(text: string, options: ParseOptions) {
+  const results = chrono.parse(text, options.referenceDate);
+  if (results.length === 0) return undefined;
+  const r = results[0];
+  const d = r.start?.date();
+  if (!d) return undefined;
+  return { date: d, fragment: r.text };
+}
+
+function parseAllDates(text: string, options: ParseOptions) {
+  const results = chrono.parse(text, options.referenceDate);
+  return results
+    .map(r => {
+      const d = r.start?.date();
+      return d ? { date: d, fragment: r.text } : null;
+    })
+    .filter(Boolean) as { date: Date; fragment: string }[];
+}
+
+function normalizeWhitespace(s: string) {
+  return s.replace(/\s+/g, ' ').replace(/\s+([.,;])/, '$1').trim();
+}
+
+function removeFragment(base: string, fragment?: string) {
+  if (!fragment) return base;
+  const escaped = fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const rx = new RegExp(`\\s*${escaped}\\s*`, 'i');
+  return base.replace(rx, ' ').trim();
+}
+
+function normalizeRecurrence(raw: string): Recurrence {
+  const lower = raw.toLowerCase();
+  if (/\bdaily\b|\bevery day\b/.test(lower)) return { type: 'daily', raw };
+  if (/\bweekly\b|\bevery week\b/.test(lower)) return { type: 'weekly', raw };
+  if (/\bmonthly\b|\bevery month\b/.test(lower)) return { type: 'monthly', raw };
+  if (/\byearly\b|\bevery year\b/.test(lower)) return { type: 'yearly', raw };
+  if (/\bweekday(s)?\b/.test(lower)) return { type: 'weekday', raw };
+  if (/\bweekend(s)?\b/.test(lower)) return { type: 'weekend', raw };
+  const dayMatch = lower.match(/\bevery\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/);
+  if (dayMatch) {
+    const map: Record<string, number> = {
+      sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
+    };
+    return { type: 'custom-weekly', daysOfWeek: [map[dayMatch[1]]], raw };
+  }
+  return { type: 'none', raw };
+}
+
+export function parseTaskInput(text: string, userOptions: Partial<ParseOptions> = {}): ParsedTaskInput {
+  const options: ParseOptions = { ...DEFAULT_OPTIONS, ...userOptions };
+  const errors: string[] = [];
+  let cleanText = text.trim();
+
+  let startDate: Date | string | undefined;
+  let dueDate: Date | string | undefined;
+  let extractedStartFragment: string | undefined;
+  let extractedDueFragment: string | undefined;
+
+  const startMatch = cleanText.match(START_PATTERN);
+  if (startMatch) {
+    const startText = startMatch[2].trim();
+    const parsed = parseFirstDate(startText, options);
+    if (parsed) {
+      startDate = toOut(parsed.date, options);
+      extractedStartFragment = startMatch[0];
+      cleanText = removeFragment(cleanText, startMatch[0]);
+    } else {
+      errors.push(`Found start phrase but couldn't parse date: "${startText}"`);
+      cleanText = removeFragment(cleanText, startMatch[0]);
     }
   }
 
-  // Detect and parse dueDate (e.g., "due on friday", "due tomorrow", "by monday")
-  const dueDateMatch = cleanText.match(/(due on|due|by)\s+(.+)/i);
-  if (dueDateMatch) {
-    const dueText = dueDateMatch[2];
-    const dueResults = chrono.parse(dueText);
-    if (dueResults.length > 0) {
-      dueDate = dueResults[0].start.date();
-      cleanText = cleanText.replace(dueDateMatch[0], '').trim();
+  const dueMatch = cleanText.match(DUE_PATTERN);
+  if (dueMatch) {
+    const dueText = dueMatch[2].trim();
+    const parsed = parseFirstDate(dueText, options);
+    if (parsed) {
+      dueDate = toOut(parsed.date, options);
+      extractedDueFragment = dueMatch[0];
+      cleanText = removeFragment(cleanText, dueMatch[0]);
+    } else {
+      errors.push(`Found due/by phrase but couldn't parse date: "${dueText}"`);
+      cleanText = removeFragment(cleanText, dueMatch[0]);
     }
   }
 
-  // If no explicit dueDate, parse any remaining dates as dueDate (e.g., "buy milk tomorrow", "meeting at 3pm")
-  if (!dueDate) {
-    const results = chrono.parse(cleanText);
-    if (results.length > 0) {
-      dueDate = results[0].start.date();
-      cleanText = cleanText.replace(results[0].text, '').trim();
+  const additionalDatesRaw = parseAllDates(cleanText, options);
+  const additionalDates: { text: string; date: Date | string }[] = [];
+
+  if (!dueDate && additionalDatesRaw.length > 0) {
+    const first = additionalDatesRaw[0];
+    dueDate = toOut(first.date, options);
+    cleanText = removeFragment(cleanText, first.fragment);
+    additionalDatesRaw.shift();
+  }
+  for (const r of additionalDatesRaw) {
+    additionalDates.push({ text: r.fragment, date: toOut(r.date, options) });
+    cleanText = removeFragment(cleanText, r.fragment);
+  }
+
+  let recurrence: Recurrence | undefined;
+  const recMatch = cleanText.match(RECURRENCE_PATTERN);
+  if (recMatch) {
+    recurrence = normalizeRecurrence(recMatch[0]);
+    cleanText = removeFragment(cleanText, recMatch[0]);
+  }
+
+  if (!startDate && !dueDate && DATE_HINTS.test(text)) {
+    errors.push("Couldn't parse date or time from input despite hints.");
+  }
+
+  cleanText = normalizeWhitespace(cleanText);
+
+  return {
+    cleanText,
+    dueDate,
+    startDate,
+    recurrence,
+    errors: errors.length ? errors : undefined,
+    meta: {
+      extractedDueFragment,
+      extractedStartFragment,
+      additionalDates: additionalDates.length ? additionalDates : undefined,
+    },
+  };
+}
+
+/* =========================
+   Highlight extraction
+   ========================= */
+
+export type HighlightType = 'date' | 'recurrence' | 'start' | 'due';
+
+export interface HighlightFragment {
+  text: string;
+  start: number; // inclusive
+  end: number;   // exclusive
+  type: HighlightType;
+}
+
+/**
+ * Extracts highlightable fragments (recurrence, headers, dates),
+ * resolves overlaps by priority, and groups contiguous same-type fragments.
+ */
+export function extractHighlightFragments(text: string, referenceDate: Date = new Date()): HighlightFragment[] {
+  if (!text || !text.trim()) return [];
+
+  const fragments: HighlightFragment[] = [];
+
+  // Fast regex detectors
+  const RECURRENCE_RX =
+    /\b(every\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday|weekday|weekend)(?:s)?|daily|weekly|monthly|yearly)\b/gi;
+  const START_HDR_RX = /\b(start(?:ing)?|begin)\b(?:\s+(?:on|at))?\s+/gi;
+  const DUE_HDR_RX   = /\b(due|due\s+on|by)\b(?:\s+(?:on|at))?\s+/gi;
+
+  for (const m of text.matchAll(RECURRENCE_RX)) {
+    fragments.push({ text: m[0], start: m.index!, end: m.index! + m[0].length, type: 'recurrence' });
+  }
+  for (const m of text.matchAll(START_HDR_RX)) {
+    fragments.push({ text: m[0], start: m.index!, end: m.index! + m[0].length, type: 'start' });
+  }
+  for (const m of text.matchAll(DUE_HDR_RX)) {
+    fragments.push({ text: m[0], start: m.index!, end: m.index! + m[0].length, type: 'due' });
+  }
+
+  // Chrono date fragments (with positions)
+  try {
+    const results = chrono.parse(text, referenceDate);
+    for (const r of results) {
+      if (typeof r.index === 'number' && r.text) {
+        fragments.push({
+          text: r.text,
+          start: r.index,
+          end: r.index + r.text.length,
+          type: 'date',
+        });
+      }
+    }
+  } catch {
+    // Safe fail; highlighting should never break input
+  }
+
+  if (fragments.length === 0) return [];
+
+  // Sort by start asc, then end asc
+  fragments.sort((a, b) => a.start - b.start || a.end - b.end);
+
+  // Resolve overlaps with priority: start/due > recurrence > date
+  const prio: Record<HighlightType, number> = { start: 3, due: 3, recurrence: 2, date: 1 };
+  const resolved: HighlightFragment[] = [];
+
+  for (const f of fragments) {
+    if (resolved.length === 0) {
+      resolved.push(f);
+      continue;
+    }
+    const last = resolved[resolved.length - 1];
+    const overlaps = !(f.end <= last.start || f.start >= last.end);
+
+    if (!overlaps) {
+      resolved.push(f);
+      continue;
+    }
+
+    if (prio[f.type] > prio[last.type]) {
+      // Split last before/after overlap, keep f centered
+      if (f.start > last.start) {
+        resolved.splice(resolved.length - 1, 0, { ...last, end: f.start });
+      }
+      resolved[resolved.length - 1] = f;
+      if (last.end > f.end) {
+        resolved.push({ ...last, start: f.end });
+      }
+    } else {
+      // Keep last; split f tails
+      if (f.start < last.start) {
+        resolved.splice(resolved.length - 1, 0, { ...f, end: last.start });
+      }
+      if (f.end > last.end) {
+        resolved.push({ ...f, start: last.end });
+      }
     }
   }
 
-  // Detect recurrence patterns (e.g., "every monday", "daily", "weekly")
-  const recurrenceRegex = /(every\s+(day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday|weekday|weekend)|daily|weekly|monthly|yearly)/i;
-  const recurrenceMatch = cleanText.match(recurrenceRegex);
-  if (recurrenceMatch) {
-    recurrence = recurrenceMatch[0];
-    cleanText = cleanText.replace(recurrenceRegex, '').trim();
-  }
+  // Clamp + normalize
+  const normalized = resolved
+    .map(f => ({ ...f, start: Math.max(0, f.start), end: Math.max(f.start, f.end) }))
+    .filter(f => f.end > f.start);
 
-  // Detect potential parse errors
-  const dateKeywords = /(tomorrow|today|yesterday|next|in \d+ days?|at \d+:\d+|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{1,2}\/\d{1,2}|\d{4}-\d{2}-\d{2})/i;
-  const timeRegex = /\d+:\d+/;
-  if ((!dueDate && !startDate) && (dateKeywords.test(text) || timeRegex.test(text))) {
-    errors.push("Couldn't parse date or time");
+  // Group contiguous same-type fragments for cleaner capsules
+  const grouped: HighlightFragment[] = [];
+  let current: HighlightFragment | null = null;
+  for (const f of normalized) {
+    if (!current) {
+      current = { ...f };
+      continue;
+    }
+    const sameType = f.type === current.type;
+    const contiguousOrTouching = f.start <= current.end;
+    if (sameType && contiguousOrTouching) {
+      current.end = Math.max(current.end, f.end);
+    } else {
+      grouped.push(current);
+      current = { ...f };
+    }
   }
+  if (current) grouped.push(current);
 
-  return { cleanText, dueDate, startDate, recurrence, errors };
+  return grouped;
 }

@@ -108,7 +108,7 @@ const HighlightedInput: React.FC<HighlightedInputProps> = ({
                     'px-4 py-3 text-base rounded-xl',
                     'resize-none',
                     '[white-space:nowrap]',
-                    '[overflow-x:auto] [overflow-y:hidden]',
+                    'no-scrollbar [overflow-x:auto] [overflow-y:hidden]',
                     'focus:outline-none'
                 )}
                 style={{

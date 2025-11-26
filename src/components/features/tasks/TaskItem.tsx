@@ -18,20 +18,20 @@ import { taskFade, gentleCompletion } from '@/utils/animations';
 import TaskMetadataChips from './TaskMetadataChips';
 
 interface TaskItemProps {
-  task: Task
-  isCompleting: boolean
-  isUndoable?: boolean
-  allowCompletion?: boolean
-  onComplete?: (taskId: string) => void
-  onUndo?: (taskId: string) => void
-  onEdit?: (task: Task) => void
-  onDelete?: (taskId: string) => void
-  index?: number
-  showDate?: boolean
-  selectionMode?: boolean
-  isSelected?: boolean
-  onSelect?: (checked: boolean) => void
-  view?: 'inbox' | 'today'
+    task: Task
+    isCompleting: boolean
+    isUndoable?: boolean
+    allowCompletion?: boolean
+    onComplete?: (taskId: string) => void
+    onUndo?: (taskId: string) => void
+    onEdit?: (task: Task) => void
+    onDelete?: (taskId: string) => void
+    index?: number
+    showDate?: boolean
+    selectionMode?: boolean
+    isSelected?: boolean
+    onSelect?: (checked: boolean) => void
+    view?: 'inbox' | 'today'
 }
 
 export function TaskItem({
@@ -91,13 +91,10 @@ export function TaskItem({
         <motion.div
             layout
             variants={taskFade}
+            custom={index}               // index drives waterfall timing
             initial="hidden"
             animate="visible"
             exit="exit"
-            transition={{
-                delay: index * 0.05,
-                layout: { duration: 0.25, ease: [0.17, 0.67, 0.83, 0.67] },
-            }}
             className="group"
             drag={view === 'today' ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
@@ -107,14 +104,12 @@ export function TaskItem({
                 variants={gentleCompletion}
                 initial="initial"
                 animate={isCompleting ? 'completing' : 'initial'}
-                className={`flex items-center gap-3 px-3 py-2 rounded-xl border transition-colors duration-200 ${
-                    isCompleting
-                        ? 'bg-primary/10 border-primary/40'
-                        : 'bg-card border-border hover:border-border/60'
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl border transition-colors duration-200 ${isCompleting
+                    ? 'bg-primary/10 border-primary/40'
+                    : 'bg-card border-border hover:border-border/60'
                 }`}
             >
-                {/* Selection mode checkbox OR completion/undo control
-           Undo mechanism (button instead of completion circle) is intentional */}
+                {/* Selection mode checkbox OR completion/undo control */}
                 {selectionMode ? (
                     <Checkbox
                         checked={isSelected}
@@ -126,21 +121,20 @@ export function TaskItem({
                     <div className="flex-shrink-0 relative">
                         {allowCompletion && isUndoable ? (
                             <motion.button
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0, opacity: 0 }}
                                 className="size-7 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-[10px] font-semibold hover:bg-accent/80 transition-colors"
                                 onClick={() => onUndo?.(task.id)}
                                 aria-label="Undo completion"
                             >
-                Undo
+                                Undo
                             </motion.button>
                         ) : allowCompletion ? (
                             <button
-                                className={`size-7 rounded-full border-2 flex items-center justify-center transition-colors duration-200 cursor-pointer ${
-                                    isCompleting
-                                        ? 'bg-primary border-primary text-primary-foreground'
-                                        : 'border-muted-foreground/40 hover:border-muted-foreground/60'
+                                className={`size-7 rounded-full border-2 flex items-center justify-center transition-colors duration-200 cursor-pointer ${isCompleting
+                                    ? 'bg-primary border-primary text-primary-foreground'
+                                    : 'border-muted-foreground/40 hover:border-muted-foreground/60'
                                 }`}
                                 onClick={() => !isCompleting && onComplete?.(task.id)}
                                 aria-label={isCompleting ? 'Completed' : 'Mark complete'}
@@ -174,10 +168,9 @@ export function TaskItem({
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <p
-                                className={`text-sm font-medium transition-colors duration-200 line-clamp-2 ${
-                                    isCompleting
-                                        ? 'text-muted-foreground line-through opacity-60'
-                                        : 'text-foreground'
+                                className={`text-sm font-medium transition-colors duration-200 line-clamp-2 ${isCompleting
+                                    ? 'text-muted-foreground line-through opacity-60'
+                                    : 'text-foreground'
                                 }`}
                             >
                                 {task.text}
@@ -192,7 +185,7 @@ export function TaskItem({
                     <TaskMetadataChips task={task} onEdit={() => onEdit?.(task)} />
                 </div>
 
-                {/* Mobile-first dropdown menu (always accessible) */}
+                {/* Dropdown menu */}
                 {(onEdit || onDelete || onSelect) && (
                     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                         <DropdownMenuTrigger asChild>
@@ -230,7 +223,7 @@ export function TaskItem({
                                     }}
                                 >
                                     <Edit3 className="size-4 mr-2" />
-                  Edit task
+                                    Edit task
                                 </DropdownMenuItem>
                             )}
                             {onDelete && (
@@ -239,7 +232,7 @@ export function TaskItem({
                                     className="text-destructive focus:text-destructive"
                                 >
                                     <Trash2 className="size-4 mr-2" />
-                  Delete task
+                                    Delete task
                                 </DropdownMenuItem>
                             )}
                         </DropdownMenuContent>

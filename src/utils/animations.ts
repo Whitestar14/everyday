@@ -189,3 +189,23 @@ export const taskFade: Variants = {
         },
     },
 };
+
+export const itemFade: Variants = {
+    hidden: { opacity: 0 },
+    visible: (i: number) => ({
+        opacity: 1,
+        transition: {
+            delay: i * 0.08,   // entrance waterfall
+            duration: 0.28,
+            ease: [0.25, 0.46, 0.45, 0.94],
+        },
+    }),
+    exit: (i: number) => ({
+        opacity: 0,
+        transition: {
+            delay: i * 0.04,   // exit waterfall
+            duration: 0.22,
+            ease: [0.25, 0.46, 0.45, 0.94],
+        },
+    }),
+};

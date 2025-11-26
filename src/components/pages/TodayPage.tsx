@@ -103,7 +103,7 @@ export function TodayPage() {
                     className="text-center mt-16 pb-20"
                 >
                     <div className="text-xs text-muted-foreground/40">
-            made with ❤️ for ADHD brains
+                        made with ❤️ for ADHD brains
                     </div>
                 </motion.div>
             </div>

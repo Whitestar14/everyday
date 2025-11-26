@@ -1,3 +1,4 @@
+// components/features/tasks/InboxPage.tsx
 'use client';
 
 import { useRef, useEffect } from 'react';
@@ -7,7 +8,7 @@ import { TaskItem } from '@/components/features/tasks/TaskItem';
 import { EmptyState } from '@/components/layout/EmptyState';
 import { useTaskStore } from '@/stores/tasks';
 import { useTasks } from '@/hooks/useTasks';
-import { listFadeContainer, taskFade } from '@/utils/animations';
+import { itemFade } from '@/utils/animations';
 import { useModal } from '@/contexts/ModalContext';
 
 export function InboxPage() {
@@ -19,12 +20,10 @@ export function InboxPage() {
     const inboxTasks = getInboxTasks();
 
     useEffect(() => {
-    // Autofocus the input on mount
         inputRef.current?.focus();
     }, []);
 
     const handleTaskComplete = (taskId: string) => {
-    // For inbox tasks, use the complete flow to allow undo
         completeTask(taskId);
     };
 
@@ -38,7 +37,6 @@ export function InboxPage() {
 
     return (
         <div className="flex flex-col h-full">
-            {/* Scrollable task list */}
             <div className="flex-1 overflow-y-auto p-4 pb-24">
                 <AnimatePresence>
                     {inboxTasks.length === 0 ? (
@@ -48,11 +46,12 @@ export function InboxPage() {
                             description="add a task below when you're ready"
                         />
                     ) : (
-                        <motion.div className="space-y-2" variants={listFadeContainer} initial="hidden" animate="visible" exit="exit">
+                        <div className="space-y-2">
                             {inboxTasks.map((task, index) => (
                                 <motion.div
                                     key={task.id}
-                                    variants={taskFade}
+                                    variants={itemFade}
+                                    custom={index}       // index drives delay
                                     initial="hidden"
                                     animate="visible"
                                     exit="exit"
@@ -74,7 +73,7 @@ export function InboxPage() {
                                     />
                                 </motion.div>
                             ))}
-                        </motion.div>
+                        </div>
                     )}
                 </AnimatePresence>
             </div>

@@ -205,7 +205,7 @@ export const PillRow: React.FC<PillRowProps> = ({
     ];
 
     return (
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide py-1 -mx-2 px-2">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-2 px-2">
             {pills.map(({ key, icon, label, value, state, triggerClick, content, wrapper }) => (
                 <React.Fragment key={key}>
                     {wrapper(

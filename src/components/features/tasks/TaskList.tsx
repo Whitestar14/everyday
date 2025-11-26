@@ -3,25 +3,25 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { TaskItem } from './TaskItem';
-import { listFadeContainer } from '@/utils/animations';
+import { itemFade } from '@/utils/animations';
 import type { Task } from '@/types/app';
 
 interface TaskListProps {
-  tasks: Task[]
-  completingTasks?: Set<string>
-  undoableTasks?: Map<string, number>
-  onCompleteTask?: (taskId: string) => void
-  onUndoTask?: (taskId: string) => void
-  onEditTask?: (task: Task) => void
-  onDeleteTask?: (taskId: string) => void
-  onViewAll?: () => void
-  maxTasks?: number
-  title?: string
-  showViewAll?: boolean
-  selectionMode?: boolean
-  selectedTasks?: Set<string>
-  onSelectTask?: (taskId: string, checked: boolean) => void
-  allowCompletion?: boolean
+    tasks: Task[]
+    completingTasks?: Set<string>
+    undoableTasks?: Map<string, number>
+    onCompleteTask?: (taskId: string) => void
+    onUndoTask?: (taskId: string) => void
+    onEditTask?: (task: Task) => void
+    onDeleteTask?: (taskId: string) => void
+    onViewAll?: () => void
+    maxTasks?: number
+    title?: string
+    showViewAll?: boolean
+    selectionMode?: boolean
+    selectedTasks?: Set<string>
+    onSelectTask?: (taskId: string, checked: boolean) => void
+    allowCompletion?: boolean
 }
 
 export function TaskList({
@@ -45,7 +45,7 @@ export function TaskList({
     const hasMore = maxTasks && tasks.length > maxTasks;
 
     return (
-        <motion.div initial="hidden" animate="visible" exit="hidden" variants={listFadeContainer} className="space-y-4 mb-8">
+        <div className="space-y-4 mb-8">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg text-foreground">{title}</h2>
                 <div className="flex items-center gap-2">
@@ -54,34 +54,42 @@ export function TaskList({
                             onClick={onViewAll}
                             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 px-2 py-1 rounded-lg transition-colors"
                         >
-              view all ({tasks.length})
+                            view all ({tasks.length})
                             <ArrowRight className="w-3 h-3" />
                         </button>
                     )}
                 </div>
             </div>
 
-            <motion.div layout className="space-y-3">
+            <div className="space-y-3">
                 <AnimatePresence mode="popLayout">
                     {displayTasks.map((task, index) => (
-                        <TaskItem
+                        <motion.div
                             key={task.id}
-                            task={task}
-                            isCompleting={completingTasks.has(task.id)}
-                            isUndoable={undoableTasks.has(task.id)}
-                            allowCompletion={allowCompletion}
-                            onComplete={onCompleteTask}
-                            onUndo={onUndoTask}
-                            onEdit={onEditTask}
-                            onDelete={onDeleteTask}
-                            index={index}
-                            selectionMode={selectionMode}
-                            isSelected={selectedTasks.has(task.id)}
-                            onSelect={(checked) => onSelectTask?.(task.id, checked as boolean)}
-                        />
+                            variants={itemFade}
+                            custom={index}          // index drives waterfall delay
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <TaskItem
+                                task={task}
+                                index={index}
+                                isCompleting={completingTasks.has(task.id)}
+                                isUndoable={undoableTasks.has(task.id)}
+                                allowCompletion={allowCompletion}
+                                onComplete={onCompleteTask}
+                                onUndo={onUndoTask}
+                                onEdit={onEditTask}
+                                onDelete={onDeleteTask}
+                                selectionMode={selectionMode}
+                                isSelected={selectedTasks.has(task.id)}
+                                onSelect={(checked) => onSelectTask?.(task.id, checked as boolean)}
+                            />
+                        </motion.div>
                     ))}
                 </AnimatePresence>
-            </motion.div>
-        </motion.div>
+            </div>
+        </div>
     );
 }

@@ -57,5 +57,5 @@
   "include": ["src", "vite.config.ts"],
 
   /* Exclusions */
-  "exclude": ["dist", "src/**/*.test.ts", "src/**/*.test.tsx", "src/__tests__"]
+  "exclude": ["dist", "android", "src/**/*.test.ts", "src/**/*.test.tsx", "src/__tests__"]
 }

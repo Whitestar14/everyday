@@ -1,5 +1,5 @@
-import { create } from 'zustand'
-import type { AppState, ViewMode } from '@/types/app'
+import { create } from 'zustand';
+import type { AppState, ViewMode } from '@/types/app';
 
 interface AppStore {
   appState: AppState
@@ -9,8 +9,8 @@ interface AppStore {
 }
 
 export const useAppStore = create<AppStore>((set) => ({
-  appState: 'loading',
-  currentView: 'inbox',
-  setAppState: (state: AppState) => set({ appState: state }),
-  setCurrentView: (view: ViewMode) => set({ currentView: view }),
-}))
+    appState: 'loading',
+    currentView: 'inbox',
+    setAppState: (state: AppState) => set({ appState: state }),
+    setCurrentView: (view: ViewMode) => set({ currentView: view }),
+}));

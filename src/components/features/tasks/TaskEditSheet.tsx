@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import { TaskSheet } from './TaskSheet'
-import type { Task } from '@/types/app'
+import { TaskSheet } from './TaskSheet';
+import type { Task } from '@/types/app';
 
 interface TaskEditSheetProps {
   task: Task | null
@@ -10,7 +10,7 @@ interface TaskEditSheetProps {
 }
 
 export function TaskEditSheet({ task, open, onOpenChange }: TaskEditSheetProps) {
-  return (
-    <TaskSheet mode="edit" task={task} open={open} onOpenChange={onOpenChange} />
-  )
+    return (
+        <TaskSheet mode="edit" task={task} open={open} onOpenChange={onOpenChange} />
+    );
 }

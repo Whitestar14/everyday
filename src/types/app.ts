@@ -5,7 +5,7 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 export interface Task {
   id: string
   text: string
-  type: "task" | "routine"
+  type: 'task' | 'routine'
   createdAt: Date
   lastCompletedAt?: Date
   completedDates?: string[] // Array of dates (YYYY-MM-DD) when routine was completed

@@ -1,4 +1,4 @@
 export default {
-    "@tailwindcss/postcss": {},
+    '@tailwindcss/postcss': {},
     autoprefixer: {},
-}
+};

@@ -42,12 +42,16 @@ const DEFAULT_OPTIONS: ParseOptions = {
   strict: false,
 };
 
-const START_PATTERN = /\b(start(?:ing)?|begin)\b(?:\s+(?:on|at))?\s+(.+?)(?=$|[.,;])?/i;
-const DUE_PATTERN = /\b(due|due\s+on|by)\b(?:\s+(?:on|at))?\s+(.+?)(?=$|[.,;])?/i;
+const START_PATTERN = /\b(start(?:ing)?|begin)\b(?:\s+(?:on|at))?\s+(.+?)(?=$|[.,;])/i;
+const DUE_PATTERN = /\b(due|due\s+on|by)\b(?:\s+(?:on|at))?\s+(.+?)(?=$|[.,;])/i;
+
+// IMPORTANT: detect recurrence before stripping start/due phrases
 const RECURRENCE_PATTERN =
   /\b(every\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday|weekday|weekend)(?:s)?|daily|weekly|monthly|yearly)\b/i;
+
+// Expand hints to include “tomorrowish”
 const DATE_HINTS =
-  /\b(tomorrow|today|yesterday|next|in\s+\d+\s+(?:day|days|hour|hours|week|weeks)|\d{1,2}:\d{2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{1,2}\/\d{1,2}|\d{4}-\d{2}-\d{2})\b/i;
+  /\b(tomorrow|tomorrowish|today|yesterday|next|in\s+\d+\s+(?:day|days|hour|hours|week|weeks)|\d{1,2}:\d{2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|\d{1,2}\/\d{1,2}|\d{4}-\d{2}-\d{2})\b/i;
 
 function toOut(value: Date, options: ParseOptions): Date | string {
   return options.returnISO ? value.toISOString() : value;
@@ -76,11 +80,32 @@ function normalizeWhitespace(s: string) {
   return s.replace(/\s+/g, ' ').replace(/\s+([.,;])/, '$1').trim();
 }
 
+// Smart fragment removal: remove the fragment and optional adjacent conjunctions
 function removeFragment(base: string, fragment?: string) {
   if (!fragment) return base;
   const escaped = fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const rx = new RegExp(`\\s*${escaped}\\s*`, 'i');
-  return base.replace(rx, ' ').trim();
+
+  // Optional leading/trailing conjunctions or punctuation around the fragment
+  // Examples we want to clean:
+  // "Report due by tomorrow" -> "Report"
+  // "Meeting Jan 10 and Jan 12" -> "Meeting"
+  // "Task starting on someday" -> "Task"
+  const rx = new RegExp(
+    // leading spaces or conjunctions
+    `(?:^|\\s|[.,;])` +
+      // optional "and" or comma before
+      `(?:and\\s+|,\\s*)?` +
+      // the fragment itself
+      `${escaped}` +
+      // optional "and" or comma after
+      `(?:\\s*(?:and|,))?` +
+      // trailing boundary
+      `(?:\\s|[.,;]|$)`,
+    'i'
+  );
+
+  const cleaned = base.replace(rx, ' ').replace(/\s+/g, ' ').trim();
+  return cleaned;
 }
 
 function normalizeRecurrence(raw: string): Recurrence {
@@ -106,6 +131,15 @@ export function parseTaskInput(text: string, userOptions: Partial<ParseOptions> 
   const errors: string[] = [];
   let cleanText = text.trim();
 
+  // 1) Detect recurrence FIRST so due/start removal doesn’t swallow “every …”
+  let recurrence: Recurrence | undefined;
+  const recMatch = cleanText.match(RECURRENCE_PATTERN);
+  if (recMatch) {
+    recurrence = normalizeRecurrence(recMatch[0]);
+    cleanText = removeFragment(cleanText, recMatch[0]);
+  }
+
+  // 2) Extract start/due phrases (and remove them fully even if unparseable)
   let startDate: Date | string | undefined;
   let dueDate: Date | string | undefined;
   let extractedStartFragment: string | undefined;
@@ -118,11 +152,12 @@ export function parseTaskInput(text: string, userOptions: Partial<ParseOptions> 
     if (parsed) {
       startDate = toOut(parsed.date, options);
       extractedStartFragment = startMatch[0];
-      cleanText = removeFragment(cleanText, startMatch[0]);
     } else {
       errors.push(`Found start phrase but couldn't parse date: "${startText}"`);
-      cleanText = removeFragment(cleanText, startMatch[0]);
+      extractedStartFragment = startMatch[0];
     }
+    // Always remove the full match cleanly
+    cleanText = removeFragment(cleanText, startMatch[0]);
   }
 
   const dueMatch = cleanText.match(DUE_PATTERN);
@@ -132,13 +167,15 @@ export function parseTaskInput(text: string, userOptions: Partial<ParseOptions> 
     if (parsed) {
       dueDate = toOut(parsed.date, options);
       extractedDueFragment = dueMatch[0];
-      cleanText = removeFragment(cleanText, dueMatch[0]);
     } else {
       errors.push(`Found due/by phrase but couldn't parse date: "${dueText}"`);
-      cleanText = removeFragment(cleanText, dueMatch[0]);
+      extractedDueFragment = dueMatch[0];
     }
+    // Always remove the full match cleanly
+    cleanText = removeFragment(cleanText, dueMatch[0]);
   }
 
+  // 3) Additional dates (first -> dueDate, rest -> meta.additionalDates)
   const additionalDatesRaw = parseAllDates(cleanText, options);
   const additionalDates: { text: string; date: Date | string }[] = [];
 
@@ -153,13 +190,7 @@ export function parseTaskInput(text: string, userOptions: Partial<ParseOptions> 
     cleanText = removeFragment(cleanText, r.fragment);
   }
 
-  let recurrence: Recurrence | undefined;
-  const recMatch = cleanText.match(RECURRENCE_PATTERN);
-  if (recMatch) {
-    recurrence = normalizeRecurrence(recMatch[0]);
-    cleanText = removeFragment(cleanText, recMatch[0]);
-  }
-
+  // 4) Hint errors (ensure we flag fuzzy hints too, e.g., “tomorrowish”)
   if (!startDate && !dueDate && DATE_HINTS.test(text)) {
     errors.push("Couldn't parse date or time from input despite hints.");
   }
@@ -193,16 +224,11 @@ export interface HighlightFragment {
   type: HighlightType;
 }
 
-/**
- * Extracts highlightable fragments (recurrence, headers, dates),
- * resolves overlaps by priority, and groups contiguous same-type fragments.
- */
 export function extractHighlightFragments(text: string, referenceDate: Date = new Date()): HighlightFragment[] {
   if (!text || !text.trim()) return [];
 
   const fragments: HighlightFragment[] = [];
 
-  // Fast regex detectors
   const RECURRENCE_RX =
     /\b(every\s+(?:day|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday|weekday|weekend)(?:s)?|daily|weekly|monthly|yearly)\b/gi;
   const START_HDR_RX = /\b(start(?:ing)?|begin)\b(?:\s+(?:on|at))?\s+/gi;
@@ -232,12 +258,11 @@ export function extractHighlightFragments(text: string, referenceDate: Date = ne
       }
     }
   } catch {
-    // Safe fail; highlighting should never break input
+    // Safe fail
   }
 
   if (fragments.length === 0) return [];
 
-  // Sort by start asc, then end asc
   fragments.sort((a, b) => a.start - b.start || a.end - b.end);
 
   // Resolve overlaps with priority: start/due > recurrence > date
@@ -258,7 +283,6 @@ export function extractHighlightFragments(text: string, referenceDate: Date = ne
     }
 
     if (prio[f.type] > prio[last.type]) {
-      // Split last before/after overlap, keep f centered
       if (f.start > last.start) {
         resolved.splice(resolved.length - 1, 0, { ...last, end: f.start });
       }
@@ -267,7 +291,6 @@ export function extractHighlightFragments(text: string, referenceDate: Date = ne
         resolved.push({ ...last, start: f.end });
       }
     } else {
-      // Keep last; split f tails
       if (f.start < last.start) {
         resolved.splice(resolved.length - 1, 0, { ...f, end: last.start });
       }
@@ -282,7 +305,7 @@ export function extractHighlightFragments(text: string, referenceDate: Date = ne
     .map(f => ({ ...f, start: Math.max(0, f.start), end: Math.max(f.start, f.end) }))
     .filter(f => f.end > f.start);
 
-  // Group contiguous same-type fragments for cleaner capsules
+  // Group contiguous or touching same-type fragments (allow single-space separation)
   const grouped: HighlightFragment[] = [];
   let current: HighlightFragment | null = null;
   for (const f of normalized) {
@@ -291,7 +314,7 @@ export function extractHighlightFragments(text: string, referenceDate: Date = ne
       continue;
     }
     const sameType = f.type === current.type;
-    const contiguousOrTouching = f.start <= current.end;
+    const contiguousOrTouching = f.start <= current.end + 1; // tolerate one space
     if (sameType && contiguousOrTouching) {
       current.end = Math.max(current.end, f.end);
     } else {

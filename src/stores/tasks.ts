@@ -188,21 +188,43 @@ export const useTaskStore = create<TaskStore>()(
         if (task.recurrence) {
           const rule = RRule.fromString(task.recurrence.rrule);
           const anchor = task.startDate ?? task.dueDate ?? new Date();
-          const nextDate = getNextOccurrence(rule, anchor);
-          const newTask: Task = {
-            ...task,
-            id: crypto.randomUUID(),
-            createdAt: new Date(),
-            dueDate: nextDate,
-            lastCompletedAt: new Date(),
-            notificationIds: [],
-          };
-          set(state => ({ tasks: [...state.tasks, newTask] }));
-          scheduleNotification(newTask).then(ids => {
+          // Find next occurrence strictly after the anchor so we don't re-show
+          // the task on the same day when completing it.
+          const nextDate = getNextOccurrence(rule, anchor, false);
+
+          const todayStr = new Date().toISOString().split('T')[0];
+
+          if (nextDate) {
+            // Update the existing task in-place: keep id, set dueDate to next occurrence
             set(state => ({
-              tasks: state.tasks.map(t => t.id === newTask.id ? { ...t, notificationIds: ids } : t),
+              tasks: state.tasks.map(t =>
+                t.id === id
+                  ? { ...t, dueDate: nextDate, lastCompletedAt: new Date(), completedDates: [...(t.completedDates || []), todayStr], notificationIds: [] }
+                  : t
+              ),
             }));
-          });
+
+            // Reschedule notifications for the updated task
+            const updated = get().tasks.find(t => t.id === id);
+            if (updated) {
+              cancelTaskNotifications(updated).catch(() => {});
+              scheduleNotification(updated).then(ids => {
+                set(state => ({
+                  tasks: state.tasks.map(t => t.id === id ? { ...t, notificationIds: ids } : t),
+                }));
+              });
+            }
+          } else {
+            // No next occurrence: mark completed and remove recurrence/dueDate
+            const today = new Date().toISOString().split('T')[0];
+            set(state => ({
+              tasks: state.tasks.map(t =>
+                t.id === id
+                  ? { ...t, lastCompletedAt: new Date(), completedDates: [...(t.completedDates || []), today], recurrence: undefined, dueDate: undefined }
+                  : t
+              ),
+            }));
+          }
         } else {
           const today = new Date().toISOString().split('T')[0];
           set(state => ({
@@ -231,16 +253,22 @@ export const useTaskStore = create<TaskStore>()(
       },
 
       getTodayTasks: () => {
-        const today = new Date(); today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
-        return get().tasks
-          .filter(task => {
-            if (task.dueDate && task.dueDate >= today && task.dueDate < tomorrow) return true;
-            if (task.startDate && task.startDate <= today) return true;
-            if (task.recurrence && shouldShowToday(task.recurrence.rrule)) return true;
-            if (!task.dueDate && !task.startDate && !task.recurrence) return true;
-            return false;
-          })
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+  return get().tasks
+    .filter(task => {
+      if (task.dueDate && task.dueDate >= today && task.dueDate < tomorrow) return true;
+      if (task.startDate && task.startDate <= today) return true;
+      if (task.recurrence && shouldShowToday(task.recurrence.rrule)) {
+        // exclude if already completed today
+        if (task.lastCompletedAt && task.lastCompletedAt.toDateString() === today.toDateString()) {
+          return false;
+        }
+        return true;
+      }
+      if (!task.dueDate && !task.startDate && !task.recurrence) return true;
+      return false;
+    })
           .sort((a, b) => {
             const aDue = a.dueDate ? a.dueDate.getTime() : Infinity;
             const bDue = b.dueDate ? b.dueDate.getTime() : Infinity;

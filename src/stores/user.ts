@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { handleStorageError, handleValidationError } from '@/utils/errorHandling'
+import { handleStorageError, handleValidationError, ValidationError } from '@/utils/errorHandling'
 
 interface UserPreferences {
   name: string | null
@@ -19,7 +19,6 @@ interface UserStore {
   updateLastVisit: () => void
   loadPreferences: () => void
   clearError: () => void
-  // replace preferences directly (used by import)
   setPreferences: (prefs: UserPreferences) => void
 }
 
@@ -27,7 +26,7 @@ const defaultPreferences: UserPreferences = {
   name: null,
   avatar: '',
   hasCompletedOnboarding: false,
-  lastVisit: null
+  lastVisit: null,
 }
 
 export const useUserStore = create<UserStore>()(
@@ -36,31 +35,31 @@ export const useUserStore = create<UserStore>()(
       preferences: defaultPreferences,
       isLoaded: false,
       error: null,
-      
+
       setName: (name: string | null) => {
         try {
           if (name !== null) {
             if (typeof name !== 'string') {
-              throw new Error('Name must be a string')
+              throw new ValidationError('Name must be a string', 'setName')
             }
 
             const trimmed = name.trim()
             if (trimmed.length === 0) {
-              throw new Error('Name cannot be empty')
+              throw new ValidationError('Name cannot be empty', 'setName')
             }
 
             if (trimmed.length > 50) {
-              throw new Error('Name cannot exceed 50 characters')
+              throw new ValidationError('Name cannot exceed 50 characters', 'setName')
             }
 
             set((state) => ({
               preferences: { ...state.preferences, name: trimmed },
-              error: null
+              error: null,
             }))
           } else {
             set((state) => ({
               preferences: { ...state.preferences, name: null },
-              error: null
+              error: null,
             }))
           }
         } catch (error) {
@@ -72,33 +71,33 @@ export const useUserStore = create<UserStore>()(
       setAvatar: (avatar: string) => {
         try {
           if (typeof avatar !== 'string' || avatar.length === 0) {
-            throw new Error('Avatar must be a non-empty string')
+            throw new ValidationError('Avatar must be a non-empty string', 'setAvatar')
           }
 
           set((state) => ({
             preferences: { ...state.preferences, avatar },
-            error: null
+            error: null,
           }))
         } catch (error) {
           const appError = handleValidationError(error, 'setAvatar')
           set({ error: appError.message })
         }
       },
-      
+
       completeOnboarding: () => {
         set((state) => ({
           preferences: { ...state.preferences, hasCompletedOnboarding: true },
-          error: null
+          error: null,
         }))
       },
-      
+
       updateLastVisit: () => {
         set((state) => ({
           preferences: { ...state.preferences, lastVisit: new Date() },
-          error: null
+          error: null,
         }))
       },
-      
+
       loadPreferences: () => {
         set({ isLoaded: true, error: null })
       },
@@ -114,7 +113,7 @@ export const useUserStore = create<UserStore>()(
 
       clearError: () => {
         set({ error: null })
-      }
+      },
     }),
     {
       name: 'everyday-user-preferences',
@@ -122,10 +121,11 @@ export const useUserStore = create<UserStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           try {
-            // Convert date strings back to Date objects
             state.preferences = {
               ...state.preferences,
-              lastVisit: state.preferences.lastVisit ? new Date(state.preferences.lastVisit as string | number | Date) : null
+              lastVisit: state.preferences.lastVisit
+                ? new Date(state.preferences.lastVisit as string | number | Date)
+                : null,
             }
             state.isLoaded = true
             state.error = null

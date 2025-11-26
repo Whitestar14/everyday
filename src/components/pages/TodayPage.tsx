@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
 import { MainHeader } from "@/components/layout/MainHeader";
 import { TaskList } from "@/components/features/tasks/TaskList";
 import { EmptyState } from "@/components/layout/EmptyState";
@@ -13,8 +14,7 @@ import type { Task } from "@/types/app";
 export function TodayPage() {
   const { openEditTask } = useModal();
   const { greeting } = useUser();
-  // No explicit `navigate` needed; selection toggles replace manage route
-
+  
   const {
     getTodayTasks,
     completeTask,
@@ -24,11 +24,12 @@ export function TodayPage() {
     undoableTasks,
     isSelectionMode,
     selectedTasks,
-  toggleSelectionMode,
-  selectTask,
+    selectTask,
   } = useTaskStore();
 
   const todayTasks = getTodayTasks();
+
+  const [showAll, setShowAll] = useState(false);
 
   // Auto-refresh at midnight
   useMidnightRefresh();
@@ -68,11 +69,11 @@ export function TodayPage() {
               onUndoTask={handleUndoTask}
               onEditTask={handleEditTask}
               onDeleteTask={handleDeleteTask}
-              onViewAll={() => toggleSelectionMode(true)}
+              onViewAll={() => setShowAll(true)}
               selectionMode={isSelectionMode}
               selectedTasks={selectedTasks}
               onSelectTask={(taskId, checked) => selectTask(taskId, checked)}
-              maxTasks={5} // Show all today tasks
+              maxTasks={showAll ? undefined : 5}
             />
           )}
         </AnimatePresence>

@@ -1,20 +1,21 @@
 import type { Task } from '@/types/app'
 
 export class TaskService {
-  static validateTask(text: string): void {
-    if (!text || typeof text !== 'string') {
-      throw new Error('Task text must be a non-empty string')
-    }
-
-    const trimmed = text.trim()
-    if (trimmed.length === 0) {
-      throw new Error('Task text cannot be empty')
-    }
-
-    if (trimmed.length > 200) {
-      throw new Error('Task text cannot exceed 200 characters')
-    }
+static validateTask(text: string): void {
+  if (typeof text !== 'string') {
+    throw new Error('Task text must be a non-empty string')
   }
+
+  const trimmed = text.trim()
+  if (trimmed.length === 0) {
+    throw new Error('Task text cannot be empty')
+  }
+
+  if (trimmed.length > 200) {
+    throw new Error('Task text cannot exceed 200 characters')
+  }
+}
+
 
   static createTask(text: string, type: 'task' | 'routine' = 'task'): Task {
     this.validateTask(text)
@@ -27,17 +28,18 @@ export class TaskService {
     }
   }
 
-  static updateTask(task: Task, updates: Partial<Pick<Task, 'text' | 'type'>>): Task {
-    if (updates.text) {
-      this.validateTask(updates.text)
-    }
-
-    return {
-      ...task,
-      ...updates,
-      text: updates.text ? updates.text.trim() : task.text,
-    }
+static updateTask(task: Task, updates: Partial<Pick<Task, 'text' | 'type'>>): Task {
+  if (updates.text !== undefined) {
+    this.validateTask(updates.text)
   }
+
+  return {
+    ...task,
+    ...updates,
+    text: updates.text !== undefined ? updates.text.trim() : task.text,
+  }
+}
+
 
   static markTaskCompleted(task: Task): Task {
     return {

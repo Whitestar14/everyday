@@ -1,112 +1,98 @@
-"use client"
+'use client';
 
-import { useMobile } from "@/hooks/useMobile"
-import { useAppState } from "@/hooks/useAppState"
-import { useTasks } from "@/hooks/useTasks"
-import { useUser } from "@/hooks/useUser"
-import { useSettings } from "@/hooks/useSettings"
-import { Toaster } from "@/components/ui/sonner"
-import { Onboarding } from "@/components/features/onboarding/Onboarding"
-import { LoadingState } from "@/components/layout/LoadingState"
-import { DayDisplay } from "@/components/layout/DayDisplay"
-import { DesktopNotSupported } from "@/components/layout/DesktopNotSupported"
-import { MainPage } from "@/components/pages/MainPage"
-import { TasksPage } from "@/components/pages/TasksPage"
-import { ManageTasksPage } from "@/components/pages/ManageTasksPage"
-import { ProfilePage } from "@/components/pages/ProfilePage"
-import { ModalProvider } from "@/contexts/ModalContext"
-import { ModalContainer } from "@/components/modals/ModalContainer"
+import { useEffect } from 'react';
+import { Router, Route, Switch, useLocation } from 'wouter';
+import { useMobile } from '@/hooks/useMobile';
+import { useAppState } from '@/hooks/useAppState';
+import { useUser } from '@/hooks/useUser';
+import { useSettings } from '@/hooks/useSettings';
+import { Toaster } from '@/components/ui/sonner';
+import { Onboarding } from '@/components/features/onboarding/Onboarding';
+import { LoadingState } from '@/components/layout/LoadingState';
+import { DayDisplay } from '@/components/layout/DayDisplay';
+import { DesktopNotSupported } from '@/components/layout/DesktopNotSupported';
+import { InboxPage } from '@/components/pages/InboxPage';
+import { TodayPage } from '@/components/pages/TodayPage';
+import { SettingsPage } from '@/components/pages/SettingsPage';
+import { UpdateSystemBars } from '@/components/features/themes/StatusBars';
+import { BottomNav } from '@/components/layout/BottomNav';
+import SelectionBar from '@/components/layout/SelectionBar';
+import { ModalProvider } from '@/providers/ModalProvider';
+import { ModalContainer } from '@/components/modals/ModalContainer';
+import { setupMidnightRunner } from '@/services/MidnightService';
+import { requestPermission } from '@/services/NotificationService';
+
+const DefaultRoute = () => {
+    const [, navigate] = useLocation();
+    useEffect(() => {
+        navigate('/inbox');
+    }, [navigate]);
+    return null;
+};
 
 function App() {
-  const isMobile = useMobile()
-  // Ensure theme is applied early
-  useSettings()
+    const isMobile = useMobile();
+    useSettings();
 
-  const {
-    currentView,
-    currentDay,
-    isLoading,
-    isDayDisplay,
-    isOnboarding,
-    handleOnboardingComplete,
-    navigateToTasks,
-    navigateToMain,
-    navigateToManage,
-    navigateToProfile,
-  } = useAppState()
+    const {
+        currentDay,
+        isLoading,
+        isDayDisplay,
+        isOnboarding,
+        handleOnboardingComplete,
+    } = useAppState();
 
-  const { tasks, availableTasks, completingTasks, undoableTasks, completeTask, undoTaskCompletion, addTask, updateTask, deleteTask } = useTasks()
-  const { greeting } = useUser()
+    useUser();
 
-  if (!isMobile) {
-    return <DesktopNotSupported />
-  }
+    useEffect(() => {
+        setupMidnightRunner();
+        requestPermission();
+    }, []);
 
-  if (isLoading) {
-    return <LoadingState />
-  }
+    if (!isMobile) {
+        return <DesktopNotSupported />;
+    }
 
-  if (isDayDisplay) {
-    return <DayDisplay day={currentDay} />
-  }
+    if (isLoading) {
+        return <LoadingState />;
+    }
 
-  if (isOnboarding) {
-    return <Onboarding onComplete={handleOnboardingComplete} />
-  }
+    if (isDayDisplay) {
+        return <DayDisplay day={currentDay} />;
+    }
 
-  return (
-    <ModalProvider>
-      {currentView === "tasks" ? (
-        <TasksPage
-          tasks={availableTasks}
-          completingTasks={completingTasks}
-          undoableTasks={undoableTasks}
-          onCompleteTask={completeTask}
-          onUndoTask={undoTaskCompletion}
-          onAddTask={addTask}
-          onUpdateTask={updateTask}
-          onDeleteTask={deleteTask}
-          onBack={navigateToMain}
-          onManage={navigateToManage}
-        />
-      ) : currentView === "manage" ? (
-      <ManageTasksPage
-      tasks={tasks}
-      onDeleteTask={deleteTask}
-      onBack={navigateToMain}
-      />
-      ) : currentView === "profile" ? (
-        <ProfilePage onBack={navigateToMain} />
-      ) : (
-        <MainPage
-          tasks={availableTasks}
-          completingTasks={completingTasks}
-          undoableTasks={undoableTasks}
-          onCompleteTask={completeTask}
-          onUndoTask={undoTaskCompletion}
-          onAddTask={addTask}
-          onDeleteTask={deleteTask}
-          onViewAllTasks={navigateToTasks}
-          onManageTasks={navigateToManage}
-          onProfileClick={navigateToProfile}
-          greeting={greeting}
-        />
-      )}
+    if (isOnboarding) {
+        return <Onboarding onComplete={handleOnboardingComplete} />;
+    }
 
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: "var(--background)",
-            color: "var(--foreground)",
-            border: "1px solid var(--border)",
-          },
-        }}
-      />
+    return (
+        <ModalProvider>
+            <Router>
+                <Switch>
+                    <Route path="/inbox" component={InboxPage} />
+                    <Route path="/today" component={TodayPage} />
+                    <Route path="/settings" component={SettingsPage} />
+                    <Route path="/" component={DefaultRoute} />
+                </Switch>
+                <BottomNav />
+                <SelectionBar />
+            </Router>
 
-      <ModalContainer />
-    </ModalProvider>
-  )
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    style: {
+                        background: 'var(--background)',
+                        color: 'var(--foreground)',
+                        border: '1px solid var(--border)',
+                    },
+                }}
+            />
+
+            <ModalContainer />
+            <UpdateSystemBars />
+        </ModalProvider>
+    );
 }
 
-export default App
+export default App;

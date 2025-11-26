@@ -1,171 +1,201 @@
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Trash2 } from "lucide-react"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import type { Task } from "@/types/app"
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
-type TaskSheetMode = 'add' | 'edit'
+import type { Task } from '@/types/app';
+import { buildTaskFromText } from '@/services/TaskFactory';
+import { createRRule } from '@/services/RecurrenceService';
+import TaskInput from './TaskSheet/TaskInput';
+import PillRow from './TaskSheet/PillRow';
+import NotesCollapsible from './TaskSheet/NotesCollapsible';
+import TaskSheetFooter from './TaskSheet/Footer';
+
+function useKeyboardSafeBottomPadding() {
+    const [paddingBottom, setPaddingBottom] = useState(16);
+    useEffect(() => {
+        const viewport = (window as Window).visualViewport;
+        const update = () => {
+            const overlap = viewport ? Math.max(0, window.innerHeight - viewport.height) : 0;
+            setPaddingBottom(Math.max(16, overlap + 20));
+        };
+        update();
+        viewport?.addEventListener('resize', update);
+        window.addEventListener('resize', update);
+        return () => {
+            viewport?.removeEventListener('resize', update);
+            window.removeEventListener('resize', update);
+        };
+    }, []);
+    return paddingBottom;
+}
+
+type TaskSheetMode = 'add' | 'edit';
 
 interface TaskSheetProps {
-  mode: TaskSheetMode
-  task?: Task | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSubmit: (text: string, type: "task" | "routine") => void
-  onDelete?: (id: string) => void
+  mode: TaskSheetMode;
+  task?: Task | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit?: (text: string, type: 'task' | 'routine', metadata?: Partial<Task>) => void;
+  onSave?: (id: string, metadata: Partial<Task>) => void;
+  hideClose?: boolean;
+  onDelete?: (id: string) => void;
 }
 
-// Reusable task type toggle component
-function TaskTypeToggle({
-  value,
-  onChange
-}: {
-  value: "task" | "routine"
-  onChange: (type: "task" | "routine") => void
-}) {
-  return (
-    <div className="flex gap-2 p-1 bg-muted/30 rounded-xl">
-      <button
-        type="button"
-        onClick={() => onChange("task")}
-        className={`flex-1 py-2 px-4 text-sm rounded-lg transition-all ${
-          value === "task"
-            ? "bg-background text-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground"
-        }`}
-      >
-        one-time task
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange("routine")}
-        className={`flex-1 py-2 px-4 text-sm rounded-lg transition-all ${
-          value === "routine"
-            ? "bg-background text-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground"
-        }`}
-      >
-        daily routine
-      </button>
-    </div>
-  )
-}
+export function TaskSheet({
+    mode,
+    task,
+    open,
+    onOpenChange,
+    onSubmit,
+    onSave,
+    hideClose = false,
+    onDelete,
+}: TaskSheetProps) {
+    const safeBottomPadding = useKeyboardSafeBottomPadding();
 
-export function TaskSheet({ mode, task, open, onOpenChange, onSubmit, onDelete }: TaskSheetProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [taskType, setTaskType] = useState<"task" | "routine">("task")
+    const [inputValue, setInputValue] = useState('');
+    const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+    const [recurrenceText, setRecurrenceText] = useState('');
+    const [notes, setNotes] = useState('');
+    const [reminderOffsetMinutes, setReminderOffsetMinutes] = useState<number | undefined>(10);
 
-  // Initialize form when task changes (for edit mode)
+  type MenuKey = null | 'due' | 'recurrence' | 'reminder';
+  const [openMenu, setOpenMenu] = useState<MenuKey>(null);
+
+  const [notesOpen, setNotesOpen] = useState(false);
+
   useEffect(() => {
-    if (mode === 'edit' && task) {
-      setInputValue(task.text)
-      setTaskType(task.type)
-    } else if (mode === 'add') {
-      setInputValue("")
-      setTaskType("task")
-    }
-  }, [task, mode])
-
-  const handleSubmit = () => {
-    if (inputValue.trim()) {
-      onSubmit(inputValue.trim(), taskType)
-      if (mode === 'add') {
-        setInputValue("")
-        setTaskType("task")
+      if (mode === 'edit' && task) {
+          setInputValue(task.text);
+          setDueDate(task.dueDate);
+          setRecurrenceText(task.recurrence?.description || '');
+          setNotes(task.notes || '');
+          setReminderOffsetMinutes(
+              task.reminderOffsetMinutes === undefined ? 10 : task.reminderOffsetMinutes
+          );
       }
-      onOpenChange(false)
-    }
-  }
+  }, [task, mode]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSubmit()
-    } else if (e.key === "Escape") {
-      handleCancel()
-    }
-  }
+  const typingTimeout = useRef<number | null>(null);
 
-  const handleCancel = () => {
-    onOpenChange(false)
-    if (mode === 'add') {
-      setInputValue("")
-      setTaskType("task")
-    }
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value;
+      setInputValue(value);
 
-  const handleDelete = () => {
-    if (task && onDelete) {
-      onDelete(task.id)
-      onOpenChange(false)
-    }
-  }
+      if (typingTimeout.current) {
+          clearTimeout(typingTimeout.current);
+      }
 
-  const title = mode === 'add' ? 'add something gentle' : 'edit task gently'
-  const description = mode === 'add' ? 'what would you like to remember?' : 'make changes to your task'
-  const submitText = mode === 'add' ? 'add gently' : 'save changes'
+      typingTimeout.current = window.setTimeout(() => {
+          const { metadata } = buildTaskFromText(value);
+          setDueDate(metadata.dueDate as Date | undefined);
+          setRecurrenceText(metadata.recurrence?.description || '');
+      }, 250);
+  };
+
+  useEffect(() => {
+      return () => {
+          if (typingTimeout.current) {
+              clearTimeout(typingTimeout.current);
+          }
+      };
+  }, []);
+
+  const resetForm = useCallback(() => {
+      setInputValue('');
+      setDueDate(undefined);
+      setRecurrenceText('');
+      setNotes('');
+      setReminderOffsetMinutes(10);
+      setNotesOpen(false);
+      setOpenMenu(null);
+  }, []);
+
+  const handleSubmit = useCallback(() => {
+      if (!inputValue.trim()) return;
+
+      const { text: finalText, metadata, type } = buildTaskFromText(inputValue, {
+          notes: notes || undefined,
+          reminderOffsetMinutes,
+      });
+
+      if (dueDate) metadata.dueDate = dueDate;
+      if (recurrenceText) {
+          const { rule } = createRRule(recurrenceText, { dtstart: metadata.dueDate });
+          if (rule) metadata.recurrence = rule;
+      }
+
+      const finalType: 'task' | 'routine' = metadata.recurrence ? 'routine' : type;
+
+      if (mode === 'add') {
+          onSubmit?.(finalText, finalType, metadata);
+          resetForm();
+      } else if (mode === 'edit' && task) {
+          onSave?.(task.id, { text: finalText, type: finalType, ...metadata });
+      // optional: keep state after edit
+      }
+
+      onOpenChange(false);
+  }, [inputValue, notes, reminderOffsetMinutes, dueDate, recurrenceText, mode, task, onSubmit, onSave, onOpenChange, resetForm]);
+
+  // Motion helpers
+  const fadeIn = { initial: { opacity: 0, y: 4 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.18 } };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="h-auto min-h-[320px] max-h-[70vh] border-t-0 rounded-t-2xl bg-background/95 backdrop-blur-sm shadow-lg px-6 py-6"
-      >
-        <div className="flex justify-center -mt-2 mb-6">
-          <div className="w-10 h-1 bg-muted-foreground/20 rounded-full" />
-        </div>
+      <Sheet
+          open={open}
+          onOpenChange={(o) => { setOpenMenu(null); onOpenChange(o); }}
+          modal={false}
+      >      <SheetContent
+              side="bottom"
+              hideClose={hideClose}
+              className={cn(
+                  'h-auto ml-2 mr-1 min-h-[60px] border-t-0 rounded-t-3xl bg-background drop-shadow-2xl drop-shadow-accent/80',
+                  'max-h-[80vh] px-4 py-4'
+              )}
+              style={{ paddingBottom: safeBottomPadding }}
+          >
+              {mode === 'add' && (
+                  <SheetHeader className="hidden pb-2">
+                      <SheetTitle className="text-left text-base font-semibold">Add task</SheetTitle>
+                  </SheetHeader>
+              )}
 
-        <SheetHeader className="pb-4">
-          <SheetTitle className="text-left text-lg font-normal">{title}</SheetTitle>
-          <SheetDescription className="text-left text-muted-foreground text-sm">
-            {description}
-          </SheetDescription>
-        </SheetHeader>
+              {mode === 'edit' && (
+                  <SheetHeader className="pb-2">
+                      <SheetTitle className="text-left text-base font-semibold">Edit task</SheetTitle>
+                  </SheetHeader>
+              )}
 
-        <div className="space-y-4">
-          <TaskTypeToggle value={taskType} onChange={setTaskType} />
+              <motion.div {...fadeIn} className="space-y-4">
+                  {/* Task input with close-to-keyboard action */}
+                  <TaskInput
+                      value={inputValue}
+                      onChange={handleInputChange}
+                      onSubmit={handleSubmit}
+                      onCancel={() => onOpenChange(false)}
+                  />
 
-          <Input
-            placeholder={taskType === "routine" ? "morning walk, evening tea..." : "take a walk, drink water..."}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="w-full px-4 py-3 text-base bg-white/50 backdrop-blur-sm rounded-xl transition-all duration-300"
-            autoFocus
-          />
+                  <PillRow
+                      dueDate={dueDate}
+                      setDueDate={setDueDate}
+                      recurrenceText={recurrenceText}
+                      setRecurrenceText={setRecurrenceText}
+                      reminderOffsetMinutes={reminderOffsetMinutes}
+                      setReminderOffsetMinutes={setReminderOffsetMinutes}
+                      openMenu={openMenu}
+                      setOpenMenu={setOpenMenu}
+                  />
 
-          <div className="flex gap-3 pt-2">
-            
-            
-          {mode === 'edit' && onDelete && (
-            <div className="flex-0">
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                className="!bg-destructive/10 text-destructive h-11 rounded-md"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+                  <NotesCollapsible notes={notes} setNotes={setNotes} notesOpen={notesOpen} setNotesOpen={setNotesOpen} />
 
-            <Button variant="ghost" onClick={handleCancel} className="flex-1 h-11 text-base rounded-xl">
-              cancel
-            </Button>
-            <Button onClick={handleSubmit} disabled={!inputValue.trim()} className="flex-1 h-11 text-base rounded-xl">
-              {submitText}
-            </Button>
-
-          </div>
-
-          <div className="text-center pt-2">
-            <p className="text-xs text-muted-foreground/60">
-              press enter to {mode === 'add' ? 'add' : 'save'}, escape to close
-            </p>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  )
+                  <TaskSheetFooter mode={mode} onDelete={onDelete} taskId={task?.id ?? null} onOpenChange={onOpenChange} />
+              </motion.div>
+          </SheetContent>
+      </Sheet>
+  );
 }
+
+export default TaskSheet;

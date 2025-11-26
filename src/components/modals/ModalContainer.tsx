@@ -1,53 +1,48 @@
-"use client"
+'use client';
 
-import { EditTaskSheet } from "@/components/features/tasks/EditTaskSheet"
-import { AddTaskSheet } from "@/components/features/tasks/AddTaskSheet"
-import { SettingsPanel } from "@/components/features/settings/SettingsPanel"
-import { useModal } from "@/contexts/ModalContext"
-import { useSettings } from "@/hooks/useSettings"
-import { useTaskStore } from "@/stores/tasks"
+import { TaskSheet } from '@/components/features/tasks/TaskSheet';
+import type { Task } from '@/types/app';
+import { AddTaskSheet } from '@/components/features/tasks/AddTaskSheet';
+import { useModal } from '@/contexts/ModalContext';
+import { useTaskStore } from '@/stores/tasks';
 
 export function ModalContainer() {
-  const { 
-    editTaskState, 
-    closeEditTask, 
-    addTaskState, 
-    closeAddTask,
-    settingsState,
-    closeSettings
-  } = useModal()
-  
-  const { buttonPosition, themeMode, handleButtonPositionChange, handleThemeChange, getButtonPositionStyles } = useSettings()
-  const { updateTask, removeTask, addTask } = useTaskStore()
+    const {
+        editTaskState,
+        closeEditTask,
+        addTaskState,
+        closeAddTask
+    } = useModal();
 
-  return (
-    <>
-      {/* Edit Task Sheet */}
-      <EditTaskSheet
-        task={editTaskState.task}
-        open={editTaskState.isOpen}
-        onOpenChange={(open) => !open && closeEditTask()}
-        onUpdateTask={updateTask}
-        onDeleteTask={removeTask}
-      />
+    const { addTask, updateTask, updateTaskMetadata, removeTask } = useTaskStore();
 
-      {/* Add Task Sheet */}
-      <AddTaskSheet
-        open={addTaskState.isOpen}
-        onOpenChange={(open) => !open && closeAddTask()}
-        onAddTask={addTask}
-        buttonPositionStyles={getButtonPositionStyles()}
-      />
+    return (
+        <>
+            {/* Edit Task Sheet */}
+            <TaskSheet
+                mode="edit"
+                task={editTaskState.task}
+                open={editTaskState.isOpen}
+                onOpenChange={(open) => !open && closeEditTask()}
+                onSave={(id, metadata) => {
+                    const m = metadata as Partial<Task>;
+                    if (m.text) updateTask(id, { text: m.text });
+                    if (m.type) updateTask(id, { type: m.type });
+                    updateTaskMetadata(id, m);
+                    closeEditTask();
+                }}
+                onDelete={(id) => {
+                    removeTask(id);
+                    closeEditTask();
+                }}
+            />
 
-      {/* Settings Panel */}
-      <SettingsPanel
-        open={settingsState.isOpen}
-        onOpenChange={(open) => !open && closeSettings()}
-        buttonPosition={buttonPosition}
-        themeMode={themeMode}
-        onButtonPositionChange={handleButtonPositionChange}
-        onThemeChange={handleThemeChange}
-      />
-    </>
-  )
+            {/* Add Task Dialog (centralized) */}
+            <AddTaskSheet
+                open={addTaskState.isOpen}
+                onOpenChange={(open) => !open && closeAddTask()}
+                onAddTask={(text: string, type: 'task' | 'routine', metadata?: Partial<Task>) => addTask(text, type, metadata)}
+            />
+        </>
+    );
 }

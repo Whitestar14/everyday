@@ -1,24 +1,19 @@
-/*
- * Tailwind CSS 4.1 Configuration
- * Prioritizing CSS-first theming with Oklch for an ADHD-friendly, warm palette.
- */
-
 @import "tailwindcss";
 @import "tw-animate-css";
+@layer theme, base, components, utilities;
 
-@font-face {
-  font-family: 'Outfit';
-  src: url(./assets/fonts/Outfit.ttf) format('truetype');
-}
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
 
-@font-face {
-  font-family: 'Lora';
-  src: url(./assets/fonts/Lora.ttf) format('truetype');
-}
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: 'Outfit', sans-serif;
   --font-serif: 'Lora', serif;
+
+  --darkMode: class;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -61,38 +56,29 @@
 }
 
 :root {
-  /* Softer, more rounded for ADHD-friendly feel */
   --radius: 0.875rem;
 
-  /* Warm, cozy backgrounds - no stark whites */
   --background: oklch(0.98 0.008 45);
   --foreground: oklch(0.25 0.015 35);
 
-  /* Soft terracotta primary - welcoming, not aggressive */
   --primary: oklch(0.65 0.12 25); 
   --primary-foreground: oklch(0.97 0.008 45); 
 
-  /* Calming sage secondary */
   --secondary: oklch(0.58 0.05 125); 
   --secondary-foreground: oklch(0.22 0.02 125);
 
-  /* Gentle card backgrounds */
   --card: oklch(0.99 0.005 45); 
   --card-foreground: oklch(0.25 0.015 35);
 
-  /* Warm muted tones */
   --muted: oklch(0.94 0.012 40);
   --muted-foreground: oklch(0.45 0.008 35);
 
-  /* Encouraging peach accent */
   --accent: oklch(0.67 0.11 45); 
   --accent-foreground: oklch(0.25 0.015 35);
 
-  /* Gentle destructive - muted coral, less alarming */
   --destructive: oklch(0.58 0.10 25);
   --destructive-foreground: oklch(0.97 0.008 45);
 
-  /* Subtle warm borders */
   --border: oklch(0.88 0.008 40);
   --input: oklch(0.88 0.008 40);
   --ring: oklch(0.65 0.12 25);
@@ -103,11 +89,9 @@
   --chart-4: oklch(0.72 0.08 65);
   --chart-5: oklch(0.55 0.08 15);
 
-  /* Popover styling */
   --popover: oklch(0.99 0.005 45);
   --popover-foreground: oklch(0.25 0.015 35);
 
-  /* Sidebar (if needed later) */
   --sidebar: oklch(0.96 0.008 45);
   --sidebar-foreground: oklch(0.25 0.015 35);
   --sidebar-primary: oklch(0.65 0.12 25);
@@ -118,10 +102,6 @@
   --sidebar-ring: oklch(0.65 0.12 25);
 }
 
-/*
- * Dark Theme Variables
- * Applied when the `.dark` class is present on an ancestor.
- */
 .dark {
   --background: oklch(0.15 0.008 35);
   --foreground: oklch(0.95 0.005 45);
@@ -151,14 +131,12 @@
   --popover: oklch(0.18 0.008 35);
   --popover-foreground: oklch(0.95 0.005 45);
 
-  /* Dark mode charts */
   --chart-1: oklch(0.70 0.10 25);
   --chart-2: oklch(0.60 0.04 125);
   --chart-3: oklch(0.72 0.09 45);
   --chart-4: oklch(0.75 0.07 65);
   --chart-5: oklch(0.58 0.06 15);
 
-  /* Dark sidebar */
   --sidebar: oklch(0.18 0.008 35);
   --sidebar-foreground: oklch(0.95 0.005 45);
   --sidebar-primary: oklch(0.70 0.10 25);
@@ -169,10 +147,18 @@
   --sidebar-ring: oklch(0.70 0.10 25);
 }
 
-/*
- * Base Layer Styles
- * Global resets and default element styles.
- */
+
+@font-face {
+  font-family: 'Outfit';
+  src: url(./assets/fonts/Outfit.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Lora';
+  src: url(./assets/fonts/Lora.ttf) format('truetype');
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -185,6 +171,76 @@
   }
 
   button {
-    @apply text-muted-foreground hover:text-foreground hover:bg-muted/50 px-2 py-1 rounded-lg transition-colors
+    @apply text-popover-foreground/75 hover:text-foreground hover:bg-muted/50 px-2 py-1 rounded-lg transition-colors
   }
+/* Stable inline box for each token */
+.hl-box {
+  position: relative;
+  display: inline-inline;
+  display: inline-block; /* fallback for older browsers */
+  vertical-align: baseline;
+}
+
+/* Symmetric capsule via transform expansion (no layout width change) */
+.hl-box::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+
+  /* Visual padding around text */
+  transform: translate(-4px, -2px);
+  width: calc(100% + 10px);
+  height: calc(100% + 5px);
+  border-radius: var(--radius-sm);
+
+  /* Default subtle background/border based on muted */
+  background: color-mix(in oklab, var(--muted) 85%, transparent);
+  outline-offset: 0; /* outline sits on the capsule edge */
+}
+
+/* Optional: extra breathing room between capsules without affecting layout */
+.hl-box + .hl-box {
+  margin-left: 0.25em;
+}
+
+/* Type-specific mappings to your theme */
+.hl-date::before {
+  /* dates lean on accent */
+  background: color-mix(in oklab, var(--accent) 25%, transparent);
+}
+
+.hl-recurrence::before {
+  /* recurrence gets secondary */
+  background: color-mix(in oklab, var(--secondary) 25%, transparent);
+}
+
+.hl-start::before {
+  /* start uses primary */
+  background: color-mix(in oklab, var(--primary) 22%, transparent);
+}
+
+.hl-due::before {
+  /* due / deadlines use destructive */
+  background: color-mix(in oklab, var(--destructive) 22%, transparent);
+}
+
+/* Dark mode tweaks: slightly stronger mixes for legibility */
+.dark .hl-date::before {
+  background: color-mix(in oklab, var(--accent) 32%, transparent);
+}
+
+.dark .hl-recurrence::before {
+  background: color-mix(in oklab, var(--secondary) 32%, transparent);
+}
+
+.dark .hl-start::before {
+  background: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+
+.dark .hl-due::before {
+  background: color-mix(in oklab, var(--destructive) 30%, transparent);
+}
+
 }

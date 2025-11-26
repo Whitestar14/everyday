@@ -5,31 +5,26 @@ import type { HighlightFragment } from '@/services/ParsingService';
 
 interface HighlightedInputProps {
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: () => void;
   onCancel?: () => void;
   debounceMs?: number;
-  className?: string; // allows reserving space under button (e.g., pr-12)
+  className?: string;
 }
 
-/**
- * Single-line input with a non-interactive overlay underneath that renders
- * padded highlight capsules via pseudo-elements (no width drift).
- */
 const HighlightedInput: React.FC<HighlightedInputProps> = ({
   value,
   onChange,
   onSubmit,
   onCancel,
-  debounceMs = 140,
+  debounceMs = 120,
   className,
 }) => {
   const [fragments, setFragments] = useState<HighlightFragment[]>([]);
   const timerRef = useRef<number | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Debounced fragment extraction
   useEffect(() => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
@@ -44,7 +39,6 @@ const HighlightedInput: React.FC<HighlightedInputProps> = ({
     };
   }, [value, debounceMs]);
 
-  // Build overlay content; spans get pseudo-element backgrounds
   const mirrored = useMemo(() => {
     if (!fragments.length) return value;
     const out: React.ReactNode[] = [];
@@ -63,61 +57,66 @@ const HighlightedInput: React.FC<HighlightedInputProps> = ({
     return out;
   }, [value, fragments]);
 
-  // Sync horizontal scroll between input and overlay
+  // Sync scrollLeft between textarea and overlay
   useEffect(() => {
-    const input = inputRef.current;
+    const ta = taRef.current;
     const overlay = overlayRef.current;
-    if (!input || !overlay) return;
-    const onScroll = () => {
-      overlay.scrollLeft = input.scrollLeft;
+    if (!ta || !overlay) return;
+    const sync = () => {
+      overlay.scrollLeft = ta.scrollLeft;
     };
-    input.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      input.removeEventListener('scroll', onScroll);
-    };
+    ta.addEventListener('scroll', sync, { passive: true });
+    return () => ta.removeEventListener('scroll', sync);
   }, []);
 
+  const WORD_SPACING_EM = 0.2;
+
   return (
-    <div className={cn('relative', className)}>
-      {/* Overlay below input; text is transparent; highlights appear via pseudo-elements */}
+    <div className={cn('relative w-full', className)}>
+      {/* Overlay */}
       <div
         ref={overlayRef}
         className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
         aria-hidden="true"
-        style={{
-          font: 'inherit',
-          lineHeight: 'inherit',
-          letterSpacing: 'inherit',
-          color: 'transparent',
-          whiteSpace: 'nowrap',
-        }}
+        style={{ font: 'inherit', lineHeight: 'inherit', letterSpacing: 'inherit' }}
       >
-        {/* Mirror padding on overlay content to match input glyph positions */}
-        <div className="px-4 py-3">
+        <div
+          className="px-4 py-3 text-transparent whitespace-nowrap"
+          style={{ wordSpacing: `${WORD_SPACING_EM}em` }}
+        >
           {mirrored}
         </div>
       </div>
 
-      {/* Native input above overlay */}
-      <input
-        ref={inputRef}
+      {/* Real input */}
+      <textarea
+        ref={taRef}
         aria-label="Task text"
         placeholder="e.g., take a walk at 9pm"
         value={value}
         onChange={onChange}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') onSubmit();
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onSubmit();
+          }
           if (e.key === 'Escape') onCancel?.();
         }}
+        rows={1}
         className={cn(
-          'w-full bg-transparent relative z-10',
+          'w-full bg-transparent h-11 relative z-10',
           'px-4 py-3 text-base rounded-xl',
-          // Single-line horizontal scroll
-          'whitespace-nowrap overflow-x-auto',
-          // Remove Tailwind input ring; wrapper uses focus-within for primary ring
+          'resize-none',
+          '[white-space:nowrap]',
+          '[overflow-x:auto] [overflow-y:hidden]',
           'focus:outline-none'
         )}
-        autoFocus
+        style={{
+          font: 'inherit',
+          letterSpacing: 'inherit',
+          lineHeight: 'inherit',
+          wordSpacing: `${WORD_SPACING_EM}em`,
+        }}
       />
     </div>
   );

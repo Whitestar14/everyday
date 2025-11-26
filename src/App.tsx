@@ -74,8 +74,8 @@ function App() {
           <Route path="/settings" component={SettingsPage} />
           <Route path="/" component={DefaultRoute} />
         </Switch>
+    <BottomNav />
   <SelectionBar />
-  <BottomNav />
       </Router>
 
       <Toaster

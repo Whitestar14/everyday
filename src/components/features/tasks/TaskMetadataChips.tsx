@@ -41,10 +41,12 @@ function formatDueChip(dueDate: Date, now: Date) {
   }
 }
 
+const defaultEase: [number, number, number, number] = [0.17, 0.67, 0.83, 0.67]
+
 const chipMotion = {
   initial: { opacity: 0, scale: 0.95 },
   animate: { opacity: 1, scale: 1 },
-  transition: { duration: 0.2, ease: "easeOut" }
+  transition: { duration: 0.2, ease: defaultEase }
 }
 
 const baseChipClasses =

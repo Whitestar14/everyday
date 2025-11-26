@@ -7,7 +7,7 @@ import { TaskItem } from "@/components/features/tasks/TaskItem";
 import { EmptyState } from "@/components/layout/EmptyState";
 import { useTaskStore } from "@/stores/tasks";
 import { useTasks } from '@/hooks/useTasks'
-import { gentleTaskSlide } from "@/utils/animations";
+import { listFadeContainer, taskFade } from "@/utils/animations";
 import { useModal } from "@/contexts/ModalContext";
 
 export function InboxPage() {
@@ -48,15 +48,14 @@ export function InboxPage() {
               description="add a task below when you're ready"
             />
           ) : (
-            <motion.div className="space-y-2">
+            <motion.div className="space-y-2" variants={listFadeContainer} initial="hidden" animate="visible" exit="exit">
               {inboxTasks.map((task, index) => (
                 <motion.div
                   key={task.id}
-                  variants={gentleTaskSlide}
+                  variants={taskFade}
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  transition={{ delay: index * 0.1 }}
                 >
                   <TaskItem
                     task={task}

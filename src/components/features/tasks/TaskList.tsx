@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight, Settings } from "lucide-react"
 import { TaskItem } from "./TaskItem"
-import { slideUp } from "@/utils/animations"
+import { listFadeContainer } from "@/utils/animations"
 import type { Task } from "@/types/app"
 
 interface TaskListProps {
@@ -47,7 +47,7 @@ onSelectTask,
   const hasMore = maxTasks && tasks.length > maxTasks
 
   return (
-    <motion.div initial="hidden" animate="visible" exit="hidden" variants={slideUp} className="space-y-4 mb-8">
+    <motion.div initial="hidden" animate="visible" exit="hidden" variants={listFadeContainer} className="space-y-4 mb-8">
       <div className="flex items-center justify-between">
       <h2 className="text-lg font-light text-foreground">{title}</h2>
       <div className="flex items-center gap-2">

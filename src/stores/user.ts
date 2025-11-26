@@ -19,6 +19,8 @@ interface UserStore {
   updateLastVisit: () => void
   loadPreferences: () => void
   clearError: () => void
+  // replace preferences directly (used by import)
+  setPreferences: (prefs: UserPreferences) => void
 }
 
 const defaultPreferences: UserPreferences = {
@@ -99,6 +101,15 @@ export const useUserStore = create<UserStore>()(
       
       loadPreferences: () => {
         set({ isLoaded: true, error: null })
+      },
+
+      setPreferences: (prefs: UserPreferences) => {
+        try {
+          set({ preferences: prefs, error: null })
+        } catch (error) {
+          const appError = handleStorageError(error, 'setPreferences')
+          set({ error: appError.message })
+        }
       },
 
       clearError: () => {

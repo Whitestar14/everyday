@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { MoreHorizontal, Edit3, Trash2, Repeat, Check } from "lucide-react"
 import { useTasks } from "@/hooks/useTasks"
 import type { Task } from "@/types/app"
-import { gentleTaskSlide, gentleCompletion } from "@/utils/animations"
+import { taskFade, gentleCompletion } from "@/utils/animations"
 import TaskMetadataChips from "./TaskMetadataChips"
 
 interface TaskItemProps {
@@ -90,7 +90,7 @@ export function TaskItem({
   return (
     <motion.div
       layout
-      variants={gentleTaskSlide}
+  variants={taskFade}
       initial="hidden"
       animate="visible"
       exit="exit"

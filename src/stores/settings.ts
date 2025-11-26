@@ -1,12 +1,15 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { handleStorageError } from '@/utils/errorHandling'
+import type { ThemeMode } from '@/types/app'
 
 interface SettingsStore {
   newTasksOnTop: boolean
+  themeMode: ThemeMode
   isLoaded: boolean
   error: string | null
   setNewTasksOnTop: (value: boolean) => void
+  setThemeMode: (mode: ThemeMode) => void
   loadSettings: () => void
   clearError: () => void
 }
@@ -14,12 +17,17 @@ interface SettingsStore {
 export const useSettingsStore = create<SettingsStore>()(
   persist(
   (set) => ({
-      newTasksOnTop: true,
+  newTasksOnTop: true,
+  themeMode: 'system',
       isLoaded: false,
       error: null,
 
       setNewTasksOnTop: (value: boolean) => {
         set({ newTasksOnTop: value, error: null })
+      },
+
+      setThemeMode: (mode: ThemeMode) => {
+        set({ themeMode: mode, error: null })
       },
 
 
@@ -34,7 +42,8 @@ export const useSettingsStore = create<SettingsStore>()(
     {
       name: 'everyday-settings',
       partialize: (state) => ({
-        newTasksOnTop: state.newTasksOnTop
+        newTasksOnTop: state.newTasksOnTop,
+        themeMode: state.themeMode,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

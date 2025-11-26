@@ -8,6 +8,9 @@ import { shouldShowToday, getNextOccurrence } from '@/services/RecurrenceService
 import { RRule } from 'rrule';
 import { buildTaskFromText } from '@/services/TaskFactory';
 
+// Undo window in milliseconds — reduced for faster removal UX
+const UNDO_WINDOW_MS = 3000
+
 interface TaskStore {
   tasks: Task[];
   isLoaded: boolean;
@@ -34,6 +37,8 @@ interface TaskStore {
   bulkDeleteSelectedTasks: () => void;
   loadTasks: () => void;
   clearError: () => void;
+  // replace tasks directly (used by import)
+  setTasks: (tasks: Task[]) => void;
 }
 
 export const useTaskStore = create<TaskStore>()(
@@ -120,7 +125,7 @@ export const useTaskStore = create<TaskStore>()(
 
         set(state => ({ undoBuffer: new Map(state.undoBuffer).set(taskId, { ...task }) }));
         set(state => ({ completingTasks: new Set(state.completingTasks).add(taskId) }));
-        const expiry = Date.now() + 5000;
+  const expiry = Date.now() + UNDO_WINDOW_MS;
         set(state => ({ undoableTasks: new Map(state.undoableTasks).set(taskId, expiry) }));
 
         setTimeout(() => {
@@ -144,7 +149,7 @@ export const useTaskStore = create<TaskStore>()(
             newUndoable.delete(taskId);
             return { undoableTasks: newUndoable };
           });
-        }, 5000);
+  }, UNDO_WINDOW_MS);
       },
 
       undoTask: (taskId: string) => {
@@ -285,6 +290,56 @@ export const useTaskStore = create<TaskStore>()(
           const remaining = state.tasks.filter(task => !state.selectedTasks.has(task.id));
           return { tasks: remaining, selectedTasks: new Set<string>(), isSelectionMode: false };
         });
+      },
+
+      setTasks: (tasks: Task[]) => {
+        try {
+          // Ensure dates are Date objects and defaults for routines
+          const normalized: Task[] = tasks.map((t) => ({
+            ...t,
+            createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
+            lastCompletedAt: t.lastCompletedAt ? new Date(t.lastCompletedAt) : undefined,
+            dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
+            startDate: t.startDate ? new Date(t.startDate) : undefined,
+            // completedDates should be an array for routines
+            completedDates:
+              t.completedDates ?? (t.type === "routine" ? [] : undefined),
+            notificationIds: t.notificationIds || [],
+          }));
+
+          // Cancel existing notifications for previous tasks
+          get().tasks.forEach((task) => {
+            if (task.notificationIds && task.notificationIds.length > 0) {
+              cancelTaskNotifications(task).catch(() => {});
+            }
+          });
+
+          set({
+            tasks: normalized,
+            completingTasks: new Set<string>(),
+            undoableTasks: new Map<string, number>(),
+            undoBuffer: new Map<string, Task>(),
+            selectedTasks: new Set<string>(),
+            isSelectionMode: false,
+            error: null,
+          });
+
+          // Schedule notifications for the new tasks
+          normalized.forEach((task) => {
+            if (task.dueDate || task.recurrence) {
+              scheduleNotification(task).then((ids) => {
+                set((state) => ({
+                  tasks: state.tasks.map((t) =>
+                    t.id === task.id ? { ...t, notificationIds: ids } : t,
+                  ),
+                }));
+              });
+            }
+          });
+        } catch (err) {
+          const appError = handleStorageError(err, 'setTasks');
+          set({ error: appError.message });
+        }
       },
 
       loadTasks: () => {

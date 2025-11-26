@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
+import { useTaskStore } from '@/stores/tasks';
 import { Inbox, Calendar } from 'lucide-react';
 import { AddTaskButton } from '@/components/features/tasks/AddTaskButton';
 import { Capacitor } from '@capacitor/core';
@@ -8,6 +9,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 export const BottomNav: React.FC = () => {
   const [location] = useLocation();
+  const { isSelectionMode } = useTaskStore();
 
   // Hide bottom nav when viewing the settings page (the user requested a clean settings layout)
   if (location === '/settings') return null;
@@ -29,8 +31,21 @@ export const BottomNav: React.FC = () => {
   const leftTab = tabs[0]
   const rightTab = tabs[1]
 
+  const navVariants = {
+    visible: { opacity: 1, y: 0, scale: 1 },
+    hidden: { opacity: 0, y: 8, scale: 0.98 },
+  };
+
   return (
-    <nav className="fixed left-1/2 bottom-6 transform -translate-x-1/2 z-50">
+    <motion.nav
+      className="fixed left-1/2 bottom-6 transform -translate-x-1/2 z-50"
+      variants={navVariants}
+      initial="visible"
+      animate={isSelectionMode ? 'hidden' : 'visible'}
+      style={{ pointerEvents: isSelectionMode ? 'none' : 'auto' }}
+      aria-hidden={isSelectionMode}
+      role="navigation"
+    >
       <div className="relative max-w-md w-[92%] mx-auto">
         <div className="bg-background border border-border rounded-3xl px-4 py-2 shadow-lg">
           <div className="flex flex-row justify-center w-full items-center gap-2 relative">
@@ -73,6 +88,6 @@ export const BottomNav: React.FC = () => {
           </div>
         </div>
       </div>
-    </nav>
+  </motion.nav>
   )
 };

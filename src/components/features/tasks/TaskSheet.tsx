@@ -81,7 +81,7 @@ export function TaskSheet({
 
 const typingTimeout = useRef<number | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setInputValue(value);
 
@@ -179,7 +179,6 @@ const typingTimeout = useRef<number | null>(null);
             onChange={handleInputChange}
             onSubmit={handleSubmit}
             onCancel={() => onOpenChange(false)}
-            disabled={!inputValue.trim()}
           />
 
           <PillRow

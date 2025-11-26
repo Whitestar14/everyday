@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 interface TaskInputProps {
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: () => void;
   onCancel?: () => void;
 }
@@ -20,30 +20,24 @@ export const TaskInput: React.FC<TaskInputProps> = ({
   const isEmpty = !value.trim();
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Focus ring around input area via focus-within */}
-      <div className="flex-1 relative rounded-xl ring-2 ring-transparent focus-within:ring-primary">
-        <HighlightedInput
-          value={value}
-          onChange={onChange}
-          onSubmit={onSubmit}
-          onCancel={onCancel}
-          debounceMs={140}
-          // Reserve space on the right under the button (matches button width)
-          className="pr-12"
-        />
-        {/* Absolutely positioned button that visually sits over reserved space */}
-        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-          <Button
-            onClick={onSubmit}
-            className={cn('h-9 rounded-md px-4', isEmpty && 'opacity-60')}
-            aria-label="Add task"
-            variant="default"
-          >
-            <ArrowRight size={16} />
-          </Button>
-        </div>
-      </div>
+    // Flex row: input + button side by side
+    <div className="flex px-2 items-center gap-2 rounded-xl ring-2 ring-transparent focus-within:ring-primary">
+      <HighlightedInput
+        value={value}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+        debounceMs={120}
+        className="flex-1"
+      />
+      <Button
+        onClick={onSubmit}
+        className={cn('h-9 rounded-md px-4', isEmpty && 'opacity-60')}
+        aria-label="Add task"
+        variant="default"
+      >
+        <ArrowRight size={16} />
+      </Button>
     </div>
   );
 };

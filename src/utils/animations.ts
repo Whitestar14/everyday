@@ -140,3 +140,52 @@ export const gentleCompletion: Variants = {
     }
   }
 }
+
+// Container with opacity-only stagger for task lists
+export const listFadeContainer: Variants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.06,
+      when: 'beforeChildren',
+    },
+  },
+  exit: {
+    transition: {
+      staggerChildren: 0.04,
+      staggerDirection: -1,
+    },
+  },
+}
+
+// Task item fade variant with height/margin animation but no translate-y
+export const taskFade: Variants = {
+  hidden: {
+    opacity: 0,
+    height: 0,
+    marginBottom: 0,
+  },
+  visible: {
+    opacity: 1,
+    height: 'auto',
+    marginBottom: 12,
+    transition: {
+      duration: 0.28,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+      height: { duration: 0.28 },
+      marginBottom: { duration: 0.28 },
+    },
+  },
+  exit: {
+    opacity: 0,
+    height: 0,
+    marginBottom: 0,
+    transition: {
+      duration: 0.2,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+      height: { duration: 0.18, delay: 0.05 },
+      marginBottom: { duration: 0.18, delay: 0.05 },
+    },
+  },
+}

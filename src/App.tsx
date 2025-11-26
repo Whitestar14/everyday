@@ -17,7 +17,7 @@ import { SettingsPage } from '@/components/pages/SettingsPage';
 import { UpdateSystemBars } from '@/components/features/themes/StatusBars';
 import { BottomNav } from '@/components/layout/BottomNav';
 import SelectionBar from '@/components/layout/SelectionBar';
-import { ModalProvider } from '@/contexts/ModalContext';
+import { ModalProvider } from '@/providers/ModalProvider';
 import { ModalContainer } from '@/components/modals/ModalContainer';
 import { setupMidnightRunner } from '@/services/MidnightService';
 import { requestPermission } from '@/services/NotificationService';

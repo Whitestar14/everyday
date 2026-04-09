@@ -6,20 +6,20 @@ A gentle task manager designed specifically for ADHD brains. Every interaction p
 
 ## Tech Stack
 
-- **React 19** + TypeScript
-- **Tailwind CSS 4** with warm, ADHD-friendly color system
-- **Framer Motion** for gentle animations
-- **Zustand** for simple state management
-- **shadcn/ui** components with custom warm styling
-- **Vite** for fast development
-- **wouter** for lightweight routing
-- **chrono-node** for natural language date parsing
+- React 19 + TypeScript 5.8
+- TailwindCSS 4
+- Framer motion
+- Zustand
+- shadcn/ui
+- wouter
+- Vite
+- chrono-node
 
 > ⚠️ development in everyday is currently paused, so if you plan on submitting a pr, I'd appreciate if it was a small change that wouldn't risk cascading into multiple failure modes simultaneously if it breaks something. Right now I plan on rewriting the app in flutter, but I need to learn it first. If you have any experience with flutter I'd appreciate the help!
 ## Development
 
 ```bash
-# Install dependencies (use pnpm workspace setup if in a monorepo)
+# Install dependencies
 pnpm install
 
 # Start development server
